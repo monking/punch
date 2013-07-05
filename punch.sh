@@ -165,6 +165,9 @@ function punch {
 	if [ "$(echo $format | perl -pe 's/default|minimal|spreadsheet/y/')" != y ]; then
 		format=default
 	fi
+	if [ -z "$TIMECLOCKEDITOR" ]; then
+		TIMECLOCKEDITOR=vim
+	fi
 	case "$format" in
 		default ) ;;
 		minimal ) ;;
@@ -201,11 +204,19 @@ function punch {
 	read latestfile other <<< $(ls -r1 $TIMECLOCKDIR/workclock_*.csv)
 	if [ -n "$latestfile" ]; then
 		if [ "$upload" = y ]; then
-			scp "$latestfile" "$REMOTETIMECLOCKDIR/"
+			if [ -n "$REMOTETIMECLOCKDIR" ]; then
+				scp "$latestfile" "$REMOTETIMECLOCKDIR/"
+			else
+				echo "To upload, you must set the REMOTETIMECLOCKDIR environment variable."
+			fi
 			return 0
 		fi
 		if [ "$download" = y ]; then
-			scp "$REMOTETIMECLOCKDIR/`basename $latestfile`" "$latestfile"
+			if [ -n "$REMOTETIMECLOCKDIR" ]; then
+				scp "$REMOTETIMECLOCKDIR/`basename $latestfile`" "$latestfile"
+			else
+				echo "To download, you must set the REMOTETIMECLOCKDIR environment variable."
+			fi
 			return 0
 		fi
 		if [ "$readLog" = lastInLine ]; then
@@ -483,9 +494,9 @@ function punch {
 		fi
 	elif [ "$readLog" = "whole" ]; then
 		if [ -r "$writeFile" ]; then
-			vim "$writeFile"
+			$TIMECLOCKEDITOR "$writeFile"
 		else
-			vim "$latestfile"
+			$TIMECLOCKEDITOR "$latestfile"
 		fi
 		return 0
 	elif [ -n "$readLog" ]; then
@@ -514,7 +525,6 @@ alias pr="punch -r"
 alias pe="punch -e"
 alias pi="punch -i"
 alias po="punch -o"
-alias psf="p -Sf \"0:00:00 last Monday\" -t \"0:00:00 last Monday +7days\" -C $(basename $(canon "$CLIENTSDIR/full-time"))"
 alias pin="punch -ai"
 alias pu="punch -u"
 alias pd="punch -d"

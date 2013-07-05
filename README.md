@@ -12,7 +12,6 @@ case may be), and modify to suite your file structure:
 	export PUNCHDIR="$HOME/punch"
 	export TIMECLOCKDIR="$HOME/timeclock"
 	export CLIENTSDIR="$HOME/clients"
-	export REMOTETIMECLOCKDIR="username@remote.server:punch"
 	source $PUNCHDIR/punch.sh
 
 Configure these variables so that:
@@ -22,8 +21,11 @@ Configure these variables so that:
   stored.
 - `CLIENTSDIR` is the path to the directory where links to your project
   directories will be stored.
+
+Futher optional environment variables are:
 - `REMOTETIMECLOCKDIR` is a scp-compatible path to remote copy of
-  `TIMECLOCKDIR`.
+  `TIMECLOCKDIR`, for use with the `-d` and `-u` options.
+- `TIMECLOCKEDITOR` to override Vim with your CSV editor of choice.
 
 _Note:_ One feature of the punch script is to help you quickly navigate to your
 projects' working directories. In order do this punch.sh must be sourced rather
@@ -155,3 +157,13 @@ copied here:
     BUGS
 		   If a block of time crosses midnight, it is counted in the day in
 	   which it begins, rather than being divided at midnight.
+
+Notes / Caveats
+---------------
+
+The first entry in every log line is a Unix timestamp. This makes sorting the
+list a breeze, but also makes it very impracticle to change the time value of
+an item. If you made a mistaken entry, you need to use `punch -e` or its alias
+`pe` to manually remove the line. Then use `punch -t` or `pt` to make the
+correct entry, and sort the now disordered lines (in Vim: visual select lines
+with <Shift>+V `:!sort`)
