@@ -161,6 +161,10 @@ copied here:
 	   Summing with the -k option will treat the task as ending at the current
 	   time, while using the -h option will treat it as ending at midnight.
 
+	   punch rounds all times down to the minute when printing sums, so that
+	   the individual sums in a report may not add up exactly to the total
+	   shown. The larger number will always be the more accurate.
+
 Notes / Caveats
 ---------------
 
@@ -176,7 +180,3 @@ projects' working directories. In order do this `punch` must be defined as a
 function of your current shell session, rather than a script with its own
 session scope. This is the reason for doing `source punch.sh` once rather than
 putting `punch.sh` in your `PATH`.
-
-`punch` rounds all times down to the minute when printing sums, so that the
-individual sums in a report may not add up exactly to the total shown. The
-larger number will always be the more accurate.
