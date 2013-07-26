@@ -14,7 +14,7 @@ case may be), and modify to suit your file structure:
 	export CLIENTSDIR="$PUNCHDIR/clients"
 	source $PUNCHDIR/punch.sh
 
-Configure these variables so that:
+Edit these variables so that:
 
 - `PUNCHDIR` is the path to the directory where this script lies.
 - `TIMECLOCKDIR` is the path to the directory where your logs will be
@@ -23,12 +23,13 @@ Configure these variables so that:
   directories will be stored.
 
 Futher optional environment variables are:
-- `REMOTETIMECLOCKDIR` is a scp-compatible path to remote copy of
-  `TIMECLOCKDIR`, for use with the `-d` and `-u` options.
-- `TIMECLOCKEDITOR` to determine which editor to use (default Vim).
+- `REMOTETIMECLOCKDIR` (for `-d` and `-u` options) an scp-compatible path to a
+  copy of `TIMECLOCKDIR`
+- `TIMECLOCKEDITOR` to determine which editor to use (default Vim)
 
 **If you're on a Mac**, you'll need to install `gdate`, packaged in `coreutils`. If
-you're using Homebrew, you can do `brew install coreutils`.
+you're using Homebrew, you can do `brew install coreutils`. The BSD `date`
+utility doesn't allow formatting a date other than NOW.
 
 Usage
 -----
