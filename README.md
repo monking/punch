@@ -153,8 +153,13 @@ copied here:
 		   (see -p).
     
     BUGS
-		   If a block of time crosses midnight, it is counted in the day in
-	   which it begins, rather than being divided at midnight.
+	   If a block of time crosses midnight, it is counted in the day in which
+       it begins, rather than being divided at midnight.
+
+	   If the last entry in the logs is not "clocking out", then sums which end
+	   with that entry will be capped at the end of the period specified.  E.G.
+	   Summing with the -k option will treat the task as ending at the current
+	   time, while using the -h option will treat it as ending at midnight.
 
 Notes / Caveats
 ---------------
