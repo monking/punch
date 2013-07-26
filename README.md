@@ -30,11 +30,6 @@ Futher optional environment variables are:
 **If you're on a Mac**, you'll need to install `gdate`, packaged in `coreutils`. If
 you're using Homebrew, you can do `brew install coreutils`.
 
-_Note:_ One feature of the punch script is to help you quickly navigate to your
-projects' working directories. In order do this punch.sh must be sourced rather
-than run, so that it is defined in your active shell session, not inside a
-script session.
-
 Usage
 -----
 
@@ -163,6 +158,12 @@ copied here:
 
 Notes / Caveats
 ---------------
+
+One feature of the punch script is to help you quickly navigate to your
+projects' working directories. In order do this `punch` must be defined as a
+function of your current shell session, rather than a script with its own
+session scope. This is the reason for doing `source punch.sh` once rather than
+putting `punch.sh` in your `PATH`.
 
 The first entry in every log line is a Unix timestamp. This makes sorting the
 list a breeze, but also makes it very impracticle to change the time value of
