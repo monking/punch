@@ -27,9 +27,7 @@ Futher optional environment variables are:
   `TIMECLOCKDIR`, for use with the `-d` and `-u` options.
 - `EDITOR` to determine which editor to use.
 
-Copy the `canon` script to a folder in your `PATH`, like `~/bin/`.
-
-If you're on a Mac, you'll need to install `gdate`, packaged in `coreutils`. If
+**If you're on a Mac**, you'll need to install `gdate`, packaged in `coreutils`. If
 you're using Homebrew, you can do `brew install coreutils`.
 
 _Note:_ One feature of the punch script is to help you quickly navigate to your
