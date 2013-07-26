@@ -25,7 +25,7 @@ Configure these variables so that:
 Futher optional environment variables are:
 - `REMOTETIMECLOCKDIR` is a scp-compatible path to remote copy of
   `TIMECLOCKDIR`, for use with the `-d` and `-u` options.
-- `EDITOR` to determine which editor to use.
+- `TIMECLOCKEDITOR` to determine which editor to use (default Vim).
 
 **If you're on a Mac**, you'll need to install `gdate`, packaged in `coreutils`. If
 you're using Homebrew, you can do `brew install coreutils`.

@@ -195,8 +195,8 @@ function punch {
 	if [ "$(echo $format | perl -pe 's/default|minimal|spreadsheet/y/')" != y ]; then
 		format=default
 	fi
-	if [ -z "$EDITOR" ]; then
-		EDITOR=vim
+	if [ -z "$TIMECLOCKEDITOR" ]; then
+		TIMECLOCKEDITOR=vim
 	fi
 	case "$format" in
 		default ) ;;
