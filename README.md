@@ -159,21 +159,19 @@ copied here:
 Notes / Caveats
 ---------------
 
+The first entry in every log line is a Unix timestamp. This makes sorting the
+list a breeze, but also makes it very impractical to change the time value of
+an item. If you made a mistaken entry, you need to use `punch -e` or its alias
+`pe` to manually remove the line. Then use `punch -t` or `pt` to make the
+correct entry, and sort the now disordered lines (in Vim: visual select lines
+with <Shift>+V `:!sort`).
+
 One feature of the punch script is to help you quickly navigate to your
 projects' working directories. In order do this `punch` must be defined as a
 function of your current shell session, rather than a script with its own
 session scope. This is the reason for doing `source punch.sh` once rather than
 putting `punch.sh` in your `PATH`.
 
-The first entry in every log line is a Unix timestamp. This makes sorting the
-list a breeze, but also makes it very impracticle to change the time value of
-an item. If you made a mistaken entry, you need to use `punch -e` or its alias
-`pe` to manually remove the line. Then use `punch -t` or `pt` to make the
-correct entry, and sort the now disordered lines (in Vim: visual select lines
-with <Shift>+V `:!sort`)
-
-`punch` uses BASH's built-in math, which has no knowledge of floats. Because of
-this, all math operations are done using seconds, and only converted to minutes
-in the end. This means that the sum of the printed project or task totals will
-fall short of the daily total.  It's up to your judgement whether to add one
-minute to your times when entering them into another time-tracking system.
+`punch` rounds all times down to the minute when printing sums, so that the
+individual sums in a report may not add up exactly to the total shown. The
+larger number will always be the more accurate.
