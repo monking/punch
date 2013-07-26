@@ -171,3 +171,9 @@ an item. If you made a mistaken entry, you need to use `punch -e` or its alias
 `pe` to manually remove the line. Then use `punch -t` or `pt` to make the
 correct entry, and sort the now disordered lines (in Vim: visual select lines
 with <Shift>+V `:!sort`)
+
+`punch` uses BASH's built-in math, which has no knowledge of floats. Because of
+this, all math operations are done using seconds, and only converted to minutes
+in the end. This means that the sum of the printed project or task totals will
+fall short of the daily total.  It's up to your judgement whether to add one
+minute to your times when entering them into another time-tracking system.
