@@ -7,11 +7,11 @@ Installation
 ------------
 
 Copy the following into your `~/.bash_rc` file (or `~/.bash_profile`, as the
-case may be), and modify to suite your file structure:
+case may be), and modify to suit your file structure:
 
 	export PUNCHDIR="$HOME/punch"
-	export TIMECLOCKDIR="$HOME/timeclock"
-	export CLIENTSDIR="$HOME/clients"
+	export TIMECLOCKDIR="$PUNCHDIR/timeclock"
+	export CLIENTSDIR="$PUNCHDIR/clients"
 	source $PUNCHDIR/punch.sh
 
 Configure these variables so that:
@@ -26,6 +26,11 @@ Futher optional environment variables are:
 - `REMOTETIMECLOCKDIR` is a scp-compatible path to remote copy of
   `TIMECLOCKDIR`, for use with the `-d` and `-u` options.
 - `TIMECLOCKEDITOR` to override Vim with your CSV editor of choice.
+
+Copy the `canon` script to a folder in your `PATH`, like `~/bin/`.
+
+If you're on a Mac, you'll need to install `gdate`, packaged in `coreutils`. If
+you're using Homebrew, you can do `brew install coreutils`.
 
 _Note:_ One feature of the punch script is to help you quickly navigate to your
 projects' working directories. In order do this punch.sh must be sourced rather
