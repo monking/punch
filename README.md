@@ -25,7 +25,7 @@ Configure these variables so that:
 Futher optional environment variables are:
 - `REMOTETIMECLOCKDIR` is a scp-compatible path to remote copy of
   `TIMECLOCKDIR`, for use with the `-d` and `-u` options.
-- `TIMECLOCKEDITOR` to override Vim with your CSV editor of choice.
+- `EDITOR` to determine which editor to use.
 
 Copy the `canon` script to a folder in your `PATH`, like `~/bin/`.
 
