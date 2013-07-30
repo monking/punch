@@ -341,6 +341,7 @@ function punch {
 	if [ -n "$action" ]; then
 		echo "$client -- $project   $action   ($date)"
 		echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\"" >> "$writeFile"
+		sort "$writeFile" -o "$writeFile"
 	elif [ "$dosum" = y ]; then
 		function punchsum {
 			local T Y Z a actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year

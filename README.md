@@ -169,12 +169,11 @@ copied here:
 Notes / Caveats
 ---------------
 
-The first entry in every log line is a Unix timestamp. This makes sorting the
+The first field in every log entry is a Unix timestamp. This makes sorting the
 list a breeze, but also makes it very impractical to change the time value of
-an item. If you made a mistaken entry, you need to use `punch -e` or its alias
+an item. If you made a mistaken entry, you need to use `punch -e`, or its alias
 `pe` to manually remove the line. Then use `punch -t` or `pt` to make the
-correct entry, and sort the now disordered lines (in Vim: visual select lines
-with <Shift>+V `:!sort`).
+correct entry. Any other fields can easily be changed in the log file.
 
 One feature of the punch script is to help you quickly navigate to your
 projects' working directories. In order do this `punch` must be defined as a
