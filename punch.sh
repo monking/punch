@@ -231,7 +231,7 @@ function punch {
 		return 0
 	fi
 	writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.csv"
-	read latestfile other <<< $(ls -r1 $TIMECLOCKDIR/workclock_*.csv)
+	read latestfile other <<< $(ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
 	if [ -n "$latestfile" ]; then
 		if [ "$upload" = y ]; then
 			if [ -n "$REMOTETIMECLOCKDIR" ]; then
@@ -329,9 +329,7 @@ function punch {
 	fi
 	wdmarker="$clientMarker/$project/.working_directory"
 	if [ "$makeLink" = y ]; then
-		if [ -a "$wdmarker" ]; then
-			unlink "$wdmarker"
-		fi
+		unlink "$wdmarker" 2>/dev/null
 		ln -s "$wd" "$wdmarker"
 		echo "link established"
 	fi
