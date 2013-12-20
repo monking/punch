@@ -138,7 +138,6 @@ function canon {
 		cd `dirname $TARGET_FILE`
 		TARGET_FILE=`basename $TARGET_FILE`
 	done
-	cd "$wd"
 
 	# Compute the canonicalized name by finding the physical path 
 	# for the directory we're in and appending the target file.
@@ -152,6 +151,7 @@ function canon {
 	else
 		printf $RESULT
 	fi
+	cd "$wd"
 }
 
 #---------------------------------------------------------#
