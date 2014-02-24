@@ -162,14 +162,13 @@ function canon {
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-	local pa pd pb pY pT pZ T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum download fUTime from fromPaid goToDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pUTime project projectDefault projectReq quiet readLog resumeLastIn format to today upload uTime verbose wd wdmarker writeFile writePaid year
-	while getopts "cC:jJ:t:sSf:ph:kwedvlgrioam:qu" flag
+	local pa pd pb pY pT pZ T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum format fUTime from fromPaid goToDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pUTime project projectDefault projectReq quiet readLog resumeLastIn sync to today uTime verbose wd wdmarker writeFile writePaid year
+	while getopts "cC:jJ:t:sSf:ph:kwevlgrioam:qy" flag
 	do
 		case $flag in
 			a ) resumeLastIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
 			c ) clientReq=y;;
 			C ) client="$OPTARG";;
-			d ) download=y;;
 			e ) readLog=whole;;
 			f ) from="$OPTARG";;
 			g ) goToDir=y;clientReq=y;projectReq=y;;
@@ -187,9 +186,9 @@ function punch {
 			s ) dosum=y;;
 			S ) dosum=y;dailySum=y;format=minimal;;
 			t ) to="$OPTARG";;
-			u ) upload=y;;
 			v ) verbose=y;dosum=y;;
 			w ) writePaid=y;clientReq=y;;
+			y ) sync=y;;
 		esac
 	done
 	if [ "$(echo $format | perl -pe 's/default|minimal|spreadsheet/y/')" != y ]; then
@@ -206,7 +205,7 @@ function punch {
 	shift $((OPTIND-1)); OPTIND=1
 	wd="$PWD"
 	action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')" 
-	if [ -z "$action" -a -z "$readLog" -a -z "$upload" -a -z "$download" -a "$dosum" != y -a "$goToDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
+	if [ -z "$action" -a -z "$readLog" -a -z "$sync" -a "$dosum" != y -a "$goToDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
 		bold=$(tput bold)
 		normal=$(tput sgr0)
 		# echo "see the manpage for usage info. (man punch)"
@@ -232,23 +231,16 @@ function punch {
 	fi
 	writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.csv"
 	read latestfile other <<< $(ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
+  if [ "$sync" = y ]; then
+    if [ -n "$REMOTETIMECLOCKDIR" ]; then
+      rsync -ruv --append "$TIMECLOCKDIR/" "$REMOTETIMECLOCKDIR" # upload
+      rsync -ruv --append "$REMOTETIMECLOCKDIR/" "$TIMECLOCKDIR" # download
+    else
+      echo "To sync, you must set the REMOTETIMECLOCKDIR environment variable."
+    fi
+    return 0
+  fi
 	if [ -n "$latestfile" ]; then
-		if [ "$upload" = y ]; then
-			if [ -n "$REMOTETIMECLOCKDIR" ]; then
-				scp "$latestfile" "$REMOTETIMECLOCKDIR/"
-			else
-				echo "To upload, you must set the REMOTETIMECLOCKDIR environment variable."
-			fi
-			return 0
-		fi
-		if [ "$download" = y ]; then
-			if [ -n "$REMOTETIMECLOCKDIR" ]; then
-				scp "$REMOTETIMECLOCKDIR/`basename $latestfile`" "$latestfile"
-			else
-				echo "To download, you must set the REMOTETIMECLOCKDIR environment variable."
-			fi
-			return 0
-		fi
 		if [ "$readLog" = lastInLine ]; then
 			while read -e line; do
 				if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
@@ -551,4 +543,5 @@ alias pr="punch -r"
 alias pe="punch -e"
 alias pu="punch -u"
 alias pd="punch -d"
+alias py="punch -y"
 alias pin="punch -ia"
