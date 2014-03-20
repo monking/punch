@@ -6,8 +6,8 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-	local T Y Z a action addToIndex b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeLastIn to today uTime verbose wd wdmarker writeFile writePaid year
-	while getopts "cC:djJ:t:sSf:ph:kwevlgrioam:qy" flag
+	local T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeLastIn to today uTime verbose wd wdmarker writeFile writePaid year
+	while getopts "cC:djJ:t:sSf:ph:kwevlgrioam:q" flag
 	do
 		case $flag in
 			a ) resumeLastIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -33,7 +33,6 @@ function punch {
 			t ) to="$OPTARG";;
 			v ) verbose=y;dosum=y;;
 			w ) writePaid=y;clientReq=y;;
-			y ) addToIndex=y;;
 		esac
 	done
 	shift $((OPTIND-1)); OPTIND=1
@@ -59,10 +58,6 @@ function punch {
 	esac
 	if [ "$goToTimeclockDir" = y ]; then
 		cd $TIMECLOCKDIR
-		return 0
-	fi
-	if [ "$addToIndex" = y ]; then
-		$SHELL <<< "cd $TIMECLOCKDIR; git add .; git status;"
 		return 0
 	fi
 	if [ -z "$to" ]; then
@@ -543,5 +538,3 @@ alias pl="punch -l"
 alias plr="punch -lr"
 alias pr="punch -r"
 alias pt="punch -t"
-alias py="punch -y"
-alias pY="punch -Y"
