@@ -1,160 +1,4 @@
 #---------------------------------------------------------#
-#                   NUMBER FORMATTING                     #
-#---------------------------------------------------------#
-function pad {
-	local len str pad padAmt 
-	if [ -n "$1" ]; then
-		len=$1
-	else
-		return 0
-	fi
-	if [ -n "$2" ]; then
-		str="$2"
-	else
-		str=""
-	fi
-	if [ -n "$3" ]; then
-		pad="$3"
-	else
-		pad=" "
-	fi
-	padAmt=$(($len - ${#str}))
-	if [ $padAmt -gt 0 ]; then
-		for i in $(eval echo \{1..$padAmt\}); do
-			echo -n "$pad"
-		done
-	fi
-	echo -n $str
-}
-function formatSeconds {
-	local dayPlural days formatted granularity hours minutes maxScale scale seconds unit unitPlural
-	if [ -z "$1" ]; then
-		return 0
-	fi
-	if [ -n "$2" ]; then
-		unit="$2"
-	else
-		unit="seconds"
-	fi
-	case "$3" in
-		seconds) maxScale=1;;
-		minutes) maxScale=2;;
-		hours) maxScale=3;;
-		*) maxScale=4;;
-	esac
-	if [ $unit = "days" ]; then
-		granularity=4
-	elif [ $unit = "hours" ]; then
-		granularity=3
-	elif [ $unit = "minutes" ]; then
-		granularity=2
-	else
-		granularity=1
-	fi
-
-	seconds=0
-	minutes=0
-	hours=0
-	days=0
-	if [ $maxScale -gt 1 ]; then
-		seconds=$(($1 % 60))
-	elif [ $maxScale -eq 1 ]; then
-		seconds=$1
-	fi
-	if [ $maxScale -gt 2 -a $1 -gt 60 ]; then
-		minutes=$(($1 / 60 % 60))
-	elif [ $maxScale -eq 2 ]; then
-		minutes=$(($1 / 60))
-	fi
-	if [ $maxScale -gt 3 -a $1 -gt 3600 ]; then
-		hours=$(($1 / 3600 % 24))
-	elif [ $maxScale -eq 3 ]; then
-		hours=$(($1 / 3600))
-	fi
-	if [ $maxScale -ge 4 ]; then
-		days=$(($1 / 86400))
-	fi
-
-	unitPlural="$unit"
-	if [ "$(eval "echo \$$unit")" -eq 1 ]; then
-		unitPlural="$(echo $unitPlural | sed 's/s$//')"
-	fi
-
-	if [ $days -gt 0 ]; then
-		scale=4
-	elif [ $hours -gt 0 ]; then
-		scale=3
-	elif [ $minutes -gt 0 ]; then
-		scale=2
-	else
-		scale=1
-	fi
-	
-	if [ $granularity -gt $scale ]; then
-		# echo -n "0 $unitPlural"
-		echo -n "0:00"
-		return 0
-	fi
-
-	formatted=""
-	if [ $scale -ge 4 -a $granularity -le 4 ]; then
-		if [ $days -ne 1 ]; then
-			dayPlural="s"
-		fi
-		formatted="$formatted $days day$dayPlural"
-	fi
-	if [ $scale -ge 2 -a $granularity -le 3 ]; then
-		if [ -n "$formatted" ]; then
-			formatted="$formatted "
-		fi
-		formatted="$formatted$hours"
-	fi
-	if [ $scale -ge 2 -a $granularity -le 2 ]; then
-		if [ -n "$formatted" ]; then
-			formatted="$formatted:"
-		fi
-		formatted="$formatted$(pad 2 $minutes 0)"
-	fi
-	if [ $scale -ge 1 -a $granularity -le 1 ]; then
-		if [ -n "$formatted" ]; then
-			formatted="$formatted:"
-		fi
-		formatted="$formatted$(pad 2 $seconds 0)"
-	fi
-	echo -n "$formatted"
-}
-function canon {
-	local wd PHYS_DIR RESULT TARGET_FILE
-	TARGET_FILE=$1
-
-	wd=`pwd`
-	cd `dirname $TARGET_FILE`
-	TARGET_FILE=`basename $TARGET_FILE`
-
-	# Iterate down a (possible) chain of symlinks
-	while [ -L "$TARGET_FILE" ]
-	do
-		TARGET_FILE=`readlink $TARGET_FILE`
-		cd `dirname $TARGET_FILE`
-		TARGET_FILE=`basename $TARGET_FILE`
-	done
-
-	# Compute the canonicalized name by finding the physical path 
-	# for the directory we're in and appending the target file.
-	PHYS_DIR=`pwd -P`
-	RESULT=$PHYS_DIR/
-	if [ ! "$TARGET_FILE" = "." ]; then
-		RESULT=$RESULT$TARGET_FILE
-	fi
-	if [ -t 1 ]; then
-		echo $RESULT
-	else
-		printf $RESULT
-	fi
-	cd "$wd"
-}
-
-#---------------------------------------------------------#
 #                          PUNCH                          #
 #---------------------------------------------------------#
 # indent all with tab character, run, repeat until only vars remain on
@@ -162,13 +6,14 @@ function canon {
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-	local pa pd pb pY pT pZ T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum format fUTime from fromPaid goToDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pUTime project projectDefault projectReq quiet readLog resumeLastIn sync to today uTime verbose wd wdmarker writeFile writePaid year
-	while getopts "cC:jJ:t:sSf:ph:kwevlgrioam:qy" flag
+	local T Y Z a action addToIndex b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeLastIn to today uTime verbose wd wdmarker writeFile writePaid year
+	while getopts "cC:djJ:t:sSf:ph:kwevlgrioam:qy" flag
 	do
 		case $flag in
 			a ) resumeLastIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
 			c ) clientReq=y;;
 			C ) client="$OPTARG";;
+			d ) goToTimeclockDir=y;;
 			e ) readLog=whole;;
 			f ) from="$OPTARG";;
 			g ) goToDir=y;clientReq=y;projectReq=y;;
@@ -188,9 +33,19 @@ function punch {
 			t ) to="$OPTARG";;
 			v ) verbose=y;dosum=y;;
 			w ) writePaid=y;clientReq=y;;
-			y ) sync=y;;
+			y ) addToIndex=y;;
 		esac
 	done
+	shift $((OPTIND-1)); OPTIND=1
+	wd="$PWD"
+	action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')" 
+	if [ -z "$action$readLog$addToIndex" -a "$dosum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
+		bold=$(tput bold)
+		normal=$(tput sgr0)
+		# echo "see the manpage for usage info. (man punch)"
+		man $PUNCHDIR/.punch.1.gz
+		return 0
+	fi
 	if [ "$(echo $format | perl -pe 's/default|minimal|spreadsheet/y/')" != y ]; then
 		format=default
 	fi
@@ -202,14 +57,12 @@ function punch {
 		minimal ) ;;
 		spreadsheet ) quiet=y;;
 	esac
-	shift $((OPTIND-1)); OPTIND=1
-	wd="$PWD"
-	action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')" 
-	if [ -z "$action" -a -z "$readLog" -a -z "$sync" -a "$dosum" != y -a "$goToDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
-		bold=$(tput bold)
-		normal=$(tput sgr0)
-		# echo "see the manpage for usage info. (man punch)"
-		man $PUNCHDIR/.punch.1.gz
+	if [ "$goToTimeclockDir" = y ]; then
+		cd $TIMECLOCKDIR
+		return 0
+	fi
+	if [ "$addToIndex" = y ]; then
+		$SHELL <<< "cd $TIMECLOCKDIR; git add .; git status;"
 		return 0
 	fi
 	if [ -z "$to" ]; then
@@ -231,15 +84,6 @@ function punch {
 	fi
 	writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.csv"
 	read latestfile other <<< $(ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
-  if [ "$sync" = y ]; then
-    if [ -n "$REMOTETIMECLOCKDIR" ]; then
-      rsync -ruv --append "$TIMECLOCKDIR/" "$REMOTETIMECLOCKDIR" # upload
-      rsync -ruv --append "$REMOTETIMECLOCKDIR/" "$TIMECLOCKDIR" # download
-    else
-      echo "To sync, you must set the REMOTETIMECLOCKDIR environment variable."
-    fi
-    return 0
-  fi
 	if [ -n "$latestfile" ]; then
 		if [ "$readLog" = lastInLine ]; then
 			while read -e line; do
@@ -527,21 +371,177 @@ function punch {
 }
 
 #---------------------------------------------------------#
+#                   NUMBER FORMATTING                     #
+#---------------------------------------------------------#
+function pad {
+	local len str pad padAmt 
+	if [ -n "$1" ]; then
+		len=$1
+	else
+		return 0
+	fi
+	if [ -n "$2" ]; then
+		str="$2"
+	else
+		str=""
+	fi
+	if [ -n "$3" ]; then
+		pad="$3"
+	else
+		pad=" "
+	fi
+	padAmt=$(($len - ${#str}))
+	if [ $padAmt -gt 0 ]; then
+		for i in $(eval echo \{1..$padAmt\}); do
+			echo -n "$pad"
+		done
+	fi
+	echo -n $str
+}
+function formatSeconds {
+	local dayPlural days formatted granularity hours minutes maxScale scale seconds unit unitPlural
+	if [ -z "$1" ]; then
+		return 0
+	fi
+	if [ -n "$2" ]; then
+		unit="$2"
+	else
+		unit="seconds"
+	fi
+	case "$3" in
+		seconds) maxScale=1;;
+		minutes) maxScale=2;;
+		hours) maxScale=3;;
+		*) maxScale=4;;
+	esac
+	if [ $unit = "days" ]; then
+		granularity=4
+	elif [ $unit = "hours" ]; then
+		granularity=3
+	elif [ $unit = "minutes" ]; then
+		granularity=2
+	else
+		granularity=1
+	fi
+
+	seconds=0
+	minutes=0
+	hours=0
+	days=0
+	if [ $maxScale -gt 1 ]; then
+		seconds=$(($1 % 60))
+	elif [ $maxScale -eq 1 ]; then
+		seconds=$1
+	fi
+	if [ $maxScale -gt 2 -a $1 -gt 60 ]; then
+		minutes=$(($1 / 60 % 60))
+	elif [ $maxScale -eq 2 ]; then
+		minutes=$(($1 / 60))
+	fi
+	if [ $maxScale -gt 3 -a $1 -gt 3600 ]; then
+		hours=$(($1 / 3600 % 24))
+	elif [ $maxScale -eq 3 ]; then
+		hours=$(($1 / 3600))
+	fi
+	if [ $maxScale -ge 4 ]; then
+		days=$(($1 / 86400))
+	fi
+
+	unitPlural="$unit"
+	if [ "$(eval "echo \$$unit")" -eq 1 ]; then
+		unitPlural="$(echo $unitPlural | sed 's/s$//')"
+	fi
+
+	if [ $days -gt 0 ]; then
+		scale=4
+	elif [ $hours -gt 0 ]; then
+		scale=3
+	elif [ $minutes -gt 0 ]; then
+		scale=2
+	else
+		scale=1
+	fi
+	
+	if [ $granularity -gt $scale ]; then
+		# echo -n "0 $unitPlural"
+		echo -n "0:00"
+		return 0
+	fi
+
+	formatted=""
+	if [ $scale -ge 4 -a $granularity -le 4 ]; then
+		if [ $days -ne 1 ]; then
+			dayPlural="s"
+		fi
+		formatted="$formatted $days day$dayPlural"
+	fi
+	if [ $scale -ge 2 -a $granularity -le 3 ]; then
+		if [ -n "$formatted" ]; then
+			formatted="$formatted "
+		fi
+		formatted="$formatted$hours"
+	fi
+	if [ $scale -ge 2 -a $granularity -le 2 ]; then
+		if [ -n "$formatted" ]; then
+			formatted="$formatted:"
+		fi
+		formatted="$formatted$(pad 2 $minutes 0)"
+	fi
+	if [ $scale -ge 1 -a $granularity -le 1 ]; then
+		if [ -n "$formatted" ]; then
+			formatted="$formatted:"
+		fi
+		formatted="$formatted$(pad 2 $seconds 0)"
+	fi
+	echo -n "$formatted"
+}
+function canon {
+	local wd PHYS_DIR RESULT TARGET_FILE
+	TARGET_FILE=$1
+
+	wd=`pwd`
+	cd `dirname $TARGET_FILE`
+	TARGET_FILE=`basename $TARGET_FILE`
+
+	# Iterate down a (possible) chain of symlinks
+	while [ -L "$TARGET_FILE" ]
+	do
+		TARGET_FILE=`readlink $TARGET_FILE`
+		cd `dirname $TARGET_FILE`
+		TARGET_FILE=`basename $TARGET_FILE`
+	done
+
+	# Compute the canonicalized name by finding the physical path 
+	# for the directory we're in and appending the target file.
+	PHYS_DIR=`pwd -P`
+	RESULT=$PHYS_DIR/
+	if [ ! "$TARGET_FILE" = "." ]; then
+		RESULT=$RESULT$TARGET_FILE
+	fi
+	if [ -t 1 ]; then
+		echo $RESULT
+	else
+		printf $RESULT
+	fi
+	cd "$wd"
+}
+
+#---------------------------------------------------------#
 #                       ALIASES                           #
 #---------------------------------------------------------#
 alias p="punch"
-alias pl="punch -l"
-alias plr="punch -lr"
+alias pd="punch -d"
+alias pe="punch -e"
 alias pg="punch -g"
 alias pgr="punch -gr"
-alias pk="punch -k"
-alias pkv="punch -kv"
 alias ph="punch -h"
 alias phv="punch -vh"
-alias pt="punch -t"
-alias pr="punch -r"
-alias pe="punch -e"
-alias pu="punch -u"
-alias pd="punch -d"
-alias py="punch -y"
 alias pin="punch -ia"
+alias pk="punch -k"
+alias pkv="punch -kv"
+alias pl="punch -l"
+alias plr="punch -lr"
+alias pr="punch -r"
+alias pt="punch -t"
+alias py="punch -y"
+alias pY="punch -Y"
