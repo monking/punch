@@ -172,6 +172,7 @@ function punch {
     echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
   elif [ "$dosum" = y ]; then
+
     function punchsum {
       local T Y Z a actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
       sumFrom="$1"
@@ -263,8 +264,34 @@ function punch {
         spreadsheet ) ;;
         * ) echo -e "$fDate (from)\n$date ('til)\n";;
       esac
+
+      if [ "$format" == "default" ]; then
+        if [ -z "$client" ]; then
+          echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle  $clientTitle$(pad $(($maxClLen - ${#clientTitle})))  $projectTitle"
+        else
+          echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle  $projectTitle"
+        fi
+      fi
+      for sumProject in $projects; do
+        eval "projectSum=\$sum_$sumProject"
+        read lineClient lineProject <<< $(echo $sumProject | perl -pe 's/__+/ /g')
+        hours="$(formatSeconds $projectSum minutes hours)"
+        if [ -z "$client" ]; then
+          case "$format" in
+            spreadsheet ) echo "$fYMD  $hours  $lineClient  $lineProject";;
+            * ) echo "$(pad $((7 - ${#hours})))$hours  $lineClient$(pad $(($maxClLen - ${#lineClient})))  $lineProject";;
+          esac
+        else
+          case "$format" in
+            spreadsheet ) echo "$fYMD  $hours  $lineProject";;
+            * ) echo "$(pad $((7 - ${#hours})))$hours  $lineProject";;
+          esac
+        fi
+      done
+
       if [ "$verbose" = y ]; then
         if [ "$format" == "default" ]; then
+          echo ''
           if [ -z "$client" ]; then
             echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle  $(pad $(($maxClLen - ${#clientTitle})))$clientTitle  $(pad $(($maxPrLen - ${#projectTitle})))$projectTitle  $actionTitle"
           else
@@ -291,35 +318,13 @@ function punch {
           spreadsheet ) ;;
           * ) echo "----------------------------------------------------";;
         esac
-      else
-        if [ "$format" == "default" ]; then
-          if [ -z "$client" ]; then
-            echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle  $clientTitle$(pad $(($maxClLen - ${#clientTitle})))  $projectTitle"
-          else
-            echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle  $projectTitle"
-          fi
-        fi
-        for sumProject in $projects; do
-          eval "projectSum=\$sum_$sumProject"
-          read lineClient lineProject <<< $(echo $sumProject | perl -pe 's/__+/ /g')
-          hours="$(formatSeconds $projectSum minutes hours)"
-          if [ -z "$client" ]; then
-            case "$format" in
-              spreadsheet ) echo "$fYMD  $hours  $lineClient  $lineProject";;
-              * ) echo "$(pad $((7 - ${#hours})))$hours  $lineClient$(pad $(($maxClLen - ${#lineClient})))  $lineProject";;
-            esac
-          else
-            case "$format" in
-              spreadsheet ) echo "$fYMD  $hours  $lineProject";;
-              * ) echo "$(pad $((7 - ${#hours})))$hours  $lineProject";;
-            esac
-          fi
-        done
       fi
+
       if [ "$format" == "default" ]; then
         echo "hours: $(formatSeconds $sum minutes hours)"
       fi
     }
+
     if [ -n "$oneDay" ]; then
       from="$oneDay 00:00:00"
     elif [ "$fromPaid" = y ]; then
