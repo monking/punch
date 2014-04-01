@@ -1,0 +1,56 @@
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  color: gray;
+}
+#status {
+  padding: 0.5em;
+  line-height: 1.5em;
+  font-size: 7em;
+}
+#status .client {
+  color: green;
+}
+#status .project {
+  color: blue;
+}
+#status .task {
+  display: block;
+}
+#status .time {
+  font-size: 1.5em;
+}
+#status .time div {
+  display: block;
+  float: left;
+  width: 33%;
+  position: relative;
+  text-align: center;
+  padding-top: 0.3em;
+}
+#status .time div:before {
+  position: absolute;
+  font-size: 0.3em;
+  width: 100%;
+  top: 0;
+  line-height: 1em;
+  text-transform: uppercase;
+  display: block;
+}
+#status .punched {
+}
+#status .punched:before {
+  content: "Punched";
+}
+#status .elapsed {
+  color: #f60;
+}
+#status .elapsed:before {
+  content: "Elapsed";
+}
+#status .break {
+}
+#status .break:before {
+  content: "Since Break";
+}
