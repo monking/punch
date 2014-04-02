@@ -4,7 +4,6 @@ function refresh_punch {
   . ../punch.sh
   statusDir="`pwd`"
   statusPath="$statusDir/status.txt"
-  echo "var punchStatusPath = '$statusPath';" > status_path.js
   while true; do
     punch -r > "$statusPath"
     punch -o >> "$statusPath"

@@ -28,6 +28,8 @@ body {
   position: relative;
   text-align: center;
   padding-top: 0.3em;
+  transition-property: color;
+  transition-duration: 0.3s;
 }
 #status .time div:before {
   position: absolute;
@@ -45,6 +47,13 @@ body {
 }
 #status .elapsed {
   color: #f60;
+  cursor: pointer;
+}
+#status .elapsed.timer {
+  background-color: #fec;
+}
+#status .elapsed:hover {
+  color: black;
 }
 #status .elapsed:before {
   content: "Elapsed";
