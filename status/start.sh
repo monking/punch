@@ -1,15 +1,19 @@
 #!/bin/bash
+cd `dirname $0`
+. ../punch.sh
+statusDir="`pwd`"
+statusPath="$statusDir/status.txt"
 function refresh_punch {
-  cd `dirname $0`
-  . ../punch.sh
-  statusDir="`pwd`"
-  statusPath="$statusDir/status.txt"
+  echo 'starting punch status watcher'
   while true; do
     punch -r > "$statusPath"
     punch -o >> "$statusPath"
     sleep 5
   done
 }
+pid_file="`dirname $0`/status_pid"
+. ./stop.sh
 refresh_punch > /dev/null &
-pid=$!
-echo "updating status in the background (PID $pid)"
+backgroundPID=$!
+echo $backgroundPID > $pid_file
+echo "PID: $backgroundPID - use $statusDir/stop.sh to stop."
