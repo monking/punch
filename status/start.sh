@@ -16,4 +16,5 @@ pid_file="`dirname $0`/status_pid"
 refresh_punch > /dev/null &
 backgroundPID=$!
 echo $backgroundPID > $pid_file
-echo "PID: $backgroundPID - use $statusDir/stop.sh to stop."
+echo "point your browser to file://$statusDir/index.html"
+echo "pss to stop"
