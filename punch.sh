@@ -93,7 +93,7 @@ function punch {
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
           continue
         fi
-      done <<< "$(tail -10 "$latestfile")"
+      done <<< "$(tail -30 "$latestfile")"
     else
       read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(tail -1 "$latestfile" | perl -pe 's/"([^"]+)",?/$1/g')"
     fi
