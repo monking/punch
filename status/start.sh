@@ -11,10 +11,10 @@ function refresh_punch {
     sleep 5
   done
 }
-pid_file="`dirname $0`/status_pid"
+pid_file="`dirname $0`/.status_pid"
 . ./stop.sh
 refresh_punch > /dev/null &
 backgroundPID=$!
 echo $backgroundPID > $pid_file
 echo "point your browser to file://$statusDir/index.html"
-echo "pss to stop"
+echo "psp to stop"
