@@ -6,8 +6,8 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeLastIn to today uTime verbose wd wdmarker writeFile writePaid year
-  while getopts "cC:djJ:t:sSf:ph:kwevlgrioam:q" flag
+  local onBreak T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeLastIn to today uTime verbose wd wdmarker writeFile writePaid year
+  while getopts "cC:djJ:t:sSf:ph:kwevlgriIoam:q" flag
   do
     case $flag in
       a ) resumeLastIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -19,6 +19,7 @@ function punch {
       g ) goToDir=y;clientReq=y;projectReq=y;;
       h ) oneDay="$OPTARG";dosum=y;;
       i ) readLog=lastInLine;;
+      I ) readLog=firstInLine;;
       j ) projectReq=y;clientReq=y;;
       J ) project="$OPTARG";;
       k ) today=y;dosum=y;;
@@ -84,14 +85,22 @@ function punch {
       while read -e line; do
         if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
-          continue
         fi
-      done <<< "$(tail -2 "$latestfile")"
+      done <<< "$(tail -30 "$latestfile")"
+    elif [ "$readLog" = firstInLine ]; then
+      onBreak=n
+      while read -e line; do
+        if [ "${line/\"*\", \"*\", \"o\", */y}" = y ]; then
+          onBreak=y
+        elif [ $onBreak = y ]; then
+          onBreak=n
+          read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
+        fi
+      done <<< "$(tail -30 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
         if [ "${line/\"*\", \"*\", \"o\", */y}" = y ]; then
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
-          continue
         fi
       done <<< "$(tail -30 "$latestfile")"
     else

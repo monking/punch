@@ -4,15 +4,17 @@ cd `dirname $0`
 statusDir="`pwd`"
 statusPath="$statusDir/status.txt"
 function refresh_punch {
-  echo 'starting punch status watcher'
   while true; do
     punch -r > "$statusPath"
-    punch -o >> "$statusPath"
+    punch -I >> "$statusPath"
     sleep 5
   done
 }
 pid_file="`dirname $0`/.status_pid"
-. ./stop.sh
+if [ -f "$pid_file" ]; then
+  . ./stop.sh
+fi
+echo 'starting punch status watcher'
 refresh_punch > /dev/null &
 backgroundPID=$!
 echo $backgroundPID > $pid_file
