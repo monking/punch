@@ -4,7 +4,7 @@
 
   timerTimeout = null;
 
-  statusPattern = /(.*) -- (.*)   (.*)   ([\d:]+) \(([\d:]+)\)\n(.*) -- (.*)   (.*)   ([\d:]+) \(([\d:]+)\)/;
+  statusPattern = /(.*) -- (.*)   (.*)   ([\d:]+) \(([\d:]+)\)\n(.*) -- (.*)   (.*)   ([\d:]+) \(([\d:]+)\)\n.*\n\s*([0-9:]+)\s+(.*)/;
 
   durationInputPattern = /^([0-9.]+)( (.*))?/;
 
@@ -57,7 +57,7 @@
         if (portions) {
           timerClass = (timerTimeout !== null ? ' timer' : '');
           statusElement.innerHTML = '<div class="time">' +
-              '<div class="punched">' + portions[4] + '</div>' +
+              '<div class="today">' + portions[11] + '</div>' +
               '<div class="elapsed' + timerClass + '" title="Set timer">' + portions[5] + '</div>' +
               '<div class="break">' + portions[10] + '</div>' +
             '</div>' +

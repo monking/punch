@@ -117,11 +117,14 @@ function punch {
     projectReq=y
     if [ "$(echo "$action" | perl -pe 's/^(stop|out|break|lunch|done)$/y/')" = y ]; then
       readLog=lastLine
-      # project=general
       io=o
     else
       io=i
     fi
+  elif [ "$readLog" = lastInLine ]; then
+    # sum up the project you're currently on
+    clientReq=y
+    projectReq=y
   fi
   if [ -z "$client" -a "$clientReq" == y ]; then
     if [ -n "$pClient" -a "${readLog/In/}" = lastLine ]; then

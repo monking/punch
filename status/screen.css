@@ -50,10 +50,10 @@ body {
   text-transform: uppercase;
   display: block;
 }
-#status .punched {
+#status .today {
 }
-#status .punched:before {
-  content: "Punched";
+#status .today:before {
+  content: "Today";
 }
 #status .elapsed {
   color: #f60;

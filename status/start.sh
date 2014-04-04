@@ -7,6 +7,7 @@ function refresh_punch {
   while true; do
     punch -r > "$statusPath"
     punch -I >> "$statusPath"
+    punch -kiqm minimal >> "$statusPath"
     sleep 5
   done
 }
