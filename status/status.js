@@ -61,9 +61,9 @@
               '<div class="elapsed' + timerClass + '" title="Set timer">' + portions[5] + '</div>' +
               '<div class="break">' + portions[10] + '</div>' +
             '</div>' +
-            '<span class="client">' + portions[1] + '</span>' +
-            ' <span class="project">' + portions[2] + '</span>' +
-            ' <span class="task">' + portions[3] + '</span>';
+            '<div class="client">' + portions[1] + '</div>' +
+            ' <div class="project">' + portions[2] + '</div>' +
+            ' <div class="task">' + portions[3] + '</div>';
           statusElement.querySelector('.elapsed').onclick = createTimer;
         }
       }
