@@ -1,31 +1,53 @@
-html {
-  height: 100%;
-}
 body {
   padding: 0;
   margin: 0;
   font-family: 'Open Sans', sans-serif;
   color: gray;
+}
+body:before {
+  display: block;
+  content: " ";
   background-image: url('favicon.png');
-  background-size: 50em;
-  background-position: center -10em;
-  background-repeat: no-repeat;
-  height: 100%;
+  background-size: 100%;
+  width: 50em;
+  height: 50em;
+  position: absolute;
+  left: 50%;
+  top: -10em;
+  margin-left: -25em;
+  opacity: 0.05;
+  z-index: -1;
 }
 #status {
-  background-color: rgba(255, 255, 255, 0.95);
   padding: 0.5em;
   line-height: 1.5em;
   font-size: 6em;
   min-height: 100%;
 }
-#status .client {
-  color: green;
+#status .client, #status .project, #status .task {
+  position: relative;
+  padding-left: 0.5em;
 }
-#status .project {
-  color: blue;
+#status .client:before, #status .project:before, #status .task:before {
+  text-transform: uppercase;
+  position: absolute;
+  display: block;
+  -webkit-transform: rotate(-90deg);
+  -webkit-transform-origin: 0;
+  width: 5em;
+  font-size: 0.3em;
+  text-align: center;
+  top: 2.7em;
+  left: 0.5em;
 }
-#status .task {
+#status .client:before {
+  content: "client";
+}
+#status .project:before {
+  content: "job";
+}
+#status .task:before {
+  content: "task";
 }
 #status .time {
   font-size: 2em;
@@ -42,7 +64,7 @@ body {
   position: relative;
   text-align: center;
   padding-top: 0.4em;
-  transition-property: color;
+  transition-property: color, text-shadow;
   transition-duration: 0.3s;
 }
 #status .time div:before {
@@ -60,16 +82,15 @@ body {
   content: "Today";
 }
 #status .elapsed {
-  color: #f60;
+  color: #E300FF;
   cursor: pointer;
 }
-#status .elapsed.timer {
-  background-color: #fec;
-}
+#status .elapsed.timer,
 #status .elapsed:hover {
-  color: black;
+  text-shadow: 0 6pt 0 black;
 }
 #status .elapsed:before {
+  text-shadow: none;
   content: "Elapsed";
 }
 #status .break {
