@@ -138,7 +138,7 @@ function punch {
     projectReq=y
   fi
   if [ -z "$client" -a "$clientReq" == y ]; then
-    if [ -n "$pClient" -a "$resumeIn" = y ]; then
+    if [ -n "$pClient" -a -n "$readLog" ]; then
       client=$pClient
     else
       if [ -n "$pClient" ]; then
@@ -162,7 +162,7 @@ function punch {
     echo "$from" > "$clientMarker/.paid"
   fi
   if [ -z "$project" -a "$projectReq" == y ]; then
-    if [ -n "$pProject" -a "$resumeIn" = y ]; then
+    if [ -n "$pProject" -a -n "$readLog" ]; then
       project=$pProject
     else
       if [ -n "$pProject" ]; then
