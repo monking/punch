@@ -6,11 +6,12 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local onBreak T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeLastIn to today uTime verbose wd wdmarker writeFile writePaid year
-  while getopts "cC:djJ:t:sSf:ph:kwevlgriIoam:q" flag
+  local onBreak T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  while getopts "cC:djJ:t:sSf:ph:kwevlgriIoaAm:q" flag
   do
     case $flag in
-      a ) resumeLastIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
+      a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
+      A ) resumeIn=y;readLog=previousInLine;clientReq=y;projectReq=y;;
       c ) clientReq=y;;
       C ) client="$OPTARG";;
       d ) goToTimeclockDir=y;;
@@ -87,6 +88,16 @@ function punch {
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
         fi
       done <<< "$(tail -30 "$latestfile")"
+    elif [ "$readLog" = previousInLine ]; then
+      previousLine=
+      while read -e line; do
+        if [ -n "$previousLine" ]; then
+          read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$previousLine" | perl -pe 's/"([^"]+)",?/$1/g')"
+        fi
+        if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
+          previousLine=$line
+        fi
+      done <<< "$(tail -30 "$latestfile")"
     elif [ "$readLog" = firstInLine ]; then
       onBreak=n
       while read -e line; do
@@ -106,7 +117,7 @@ function punch {
     else
       read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(tail -1 "$latestfile" | perl -pe 's/"([^"]+)",?/$1/g')"
     fi
-    if [ "$resumeLastIn" = y ]; then action="$pAction"; fi
+    if [ "$resumeIn" = y ]; then action="$pAction"; fi
     pDate="$pa $pd $pb $pY $pT $pZ"
   fi
   if [ ! -a "$CLIENTSDIR" ]; then
@@ -127,7 +138,7 @@ function punch {
     projectReq=y
   fi
   if [ -z "$client" -a "$clientReq" == y ]; then
-    if [ -n "$pClient" -a "${readLog/In/}" = lastLine ]; then
+    if [ -n "$pClient" -a "$resumeIn" = y ]; then
       client=$pClient
     else
       if [ -n "$pClient" ]; then
@@ -151,7 +162,7 @@ function punch {
     echo "$from" > "$clientMarker/.paid"
   fi
   if [ -z "$project" -a "$projectReq" == y ]; then
-    if [ -n "$pProject" -a "${readLog/In/}" = lastLine ]; then
+    if [ -n "$pProject" -a "$resumeIn" = y ]; then
       project=$pProject
     else
       if [ -n "$pProject" ]; then
@@ -548,7 +559,8 @@ alias pg="punch -g"
 alias pgr="punch -gr"
 alias ph="punch -h"
 alias phv="punch -vh"
-alias pin="punch -ia"
+alias pin="punch -a"
+alias pbk="punch -A"
 alias pk="punch -k"
 alias pkv="punch -kv"
 alias pl="punch -l"
