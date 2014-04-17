@@ -144,6 +144,27 @@ copied here:
     -w
         Write the beginning of the time range to the client record (see -p).
 
+    ALIASES
+    Several shell command aliases are defined for common tasks:
+
+        p        punch
+        pd       punch -d
+        pe       punch -e
+        pg       punch -g
+        pgr      punch -gr
+        ph       punch -h
+        phv      punch -vh
+        pin      punch -a
+        pbk      punch -A
+        pk       punch -k
+        pkv      punch -kv
+        pl       punch -l
+        plr      punch -lr
+        pr       punch -r
+        pt       punch -t
+        pss      $PUNCHDIR/status/start.sh
+        psp      $PUNCHDIR/status/stop.sh
+
     BUGS
     If a block of time crosses midnight, it is counted in the day in which it
     begins, rather than being divided at midnight.
@@ -171,9 +192,3 @@ projects' working directories. In order do this `punch` must be defined as a
 function of your current shell session, rather than a script with its own
 session scope. This is the reason for doing `source punch.sh` once rather than
 putting `punch.sh` in your `PATH`.
-
-
-Todo
-----
-
-- show summary and detailed sums in one command
