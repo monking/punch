@@ -126,7 +126,7 @@ function punch {
   if [ -n "$action" ]; then
     clientReq=y
     projectReq=y
-    if [ "$(echo "$action" | perl -pe 's/^(stop|out|break|lunch|done)$/y/')" = y ]; then
+    if [[ $action =~ ^(stop|out|break|lunch|done) ]]; then
       readLog=lastLine
       io=o
     else
