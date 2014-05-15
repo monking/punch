@@ -87,7 +87,7 @@ function punch {
         if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
         fi
-      done <<< "$(tail -30 "$latestfile")"
+      done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = previousInLine ]; then
       previousLine=
       while read -e line; do
@@ -97,7 +97,7 @@ function punch {
         if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
           previousLine=$line
         fi
-      done <<< "$(tail -30 "$latestfile")"
+      done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = firstInLine ]; then
       onBreak=n
       while read -e line; do
@@ -107,13 +107,13 @@ function punch {
           onBreak=n
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
         fi
-      done <<< "$(tail -30 "$latestfile")"
+      done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
         if [ "${line/\"*\", \"*\", \"o\", */y}" = y ]; then
           read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
         fi
-      done <<< "$(tail -30 "$latestfile")"
+      done <<< "$(tail -50 "$latestfile")"
     else
       read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(tail -1 "$latestfile" | perl -pe 's/"([^"]+)",?/$1/g')"
     fi
