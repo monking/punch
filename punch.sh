@@ -6,19 +6,20 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local onBreak T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
-  while getopts "cC:djJ:t:sSf:ph:kwevlgriIoaAm:q" flag
+  local onBreak T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  while getopts "cC:d:jJ:t:sSf:pkwevlgGhriIoaAm:q" flag
   do
     case $flag in
       a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
       A ) resumeIn=y;readLog=previousInLine;clientReq=y;projectReq=y;;
       c ) clientReq=y;;
       C ) client="$OPTARG";;
-      d ) goToTimeclockDir=y;;
+      d ) oneDay="$OPTARG";dosum=y;;
       e ) readLog=whole;;
       f ) from="$OPTARG";;
       g ) goToDir=y;clientReq=y;projectReq=y;;
-      h ) oneDay="$OPTARG";dosum=y;;
+      G ) goToTimeclockDir=y;;
+      h ) harvest=y;hclAction=;;
       i ) readLog=lastInLine;;
       I ) readLog=firstInLine;;
       j ) projectReq=y;clientReq=y;;
@@ -117,7 +118,14 @@ function punch {
     else
       read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(tail -1 "$latestfile" | perl -pe 's/"([^"]+)",?/$1/g')"
     fi
-    if [ "$resumeIn" = y ]; then action="$pAction"; fi
+    if [[ $resumeIn = y ]]; then
+      action="$pAction"
+      if [[ $pInOut = o ]]; then
+        hclAction="resume"
+      else
+        hclAction="note"
+      fi
+    fi
     pDate="$pa $pd $pb $pY $pT $pZ"
   fi
   if [ ! -a "$CLIENTSDIR" ]; then
@@ -129,8 +137,10 @@ function punch {
     if [[ $action =~ ^(stop|out|break|lunch|done)(:.*)?$ ]]; then
       readLog=lastLine
       io=o
+      if [[ -z $hclAction ]]; then hclAction="stop"; fi
     else
       io=i
+      if [[ -z $hclAction ]]; then hclAction="start"; fi
     fi
   elif [ "$readLog" = lastInLine ]; then
     # sum up the project you're currently on
@@ -190,10 +200,18 @@ function punch {
   if [ "$goToDir" = y ]; then
     cd "$(readlink "$wdmarker")"
   fi
-  if [ -n "$action" ]; then
+  if [[ -n "$action" ]]; then
     echo "$client -- $project   $action   ($date)"
     echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
+
+    if [[ $harvest = y && -n $hclAction ]]; then
+      if [[ $hclAction = note ]]; then
+        hcl $hclAction $action
+      else
+        hcl $hclAction
+      fi
+    fi
   elif [ "$dosum" = y ]; then
 
     function punchsum {
@@ -553,12 +571,12 @@ function canon {
 #                       ALIASES                           #
 #---------------------------------------------------------#
 alias p="punch"
-alias pd="punch -d"
 alias pe="punch -e"
 alias pg="punch -g"
+alias pgg="punch -G"
 alias pgr="punch -gr"
-alias ph="punch -h"
-alias phv="punch -vh"
+alias pd="punch -d"
+alias pdv="punch -vd"
 alias pin="punch -a"
 alias pbk="punch -A"
 alias pk="punch -k"

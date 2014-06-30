@@ -48,8 +48,8 @@ copied here:
 
     SYNOPSIS
     punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
-          [-s | -S] [-f <time> | -p | -h | -k] [-wr] [-vq | -m <format>]
-          [-elg] [<action> | -a]
+          [-s | -S] [-f <time> | -p | -d | -k] [-wr] [-vq | -m <format>]
+          [-elgG] [<action> | -a]
 
     OPTIONS
     -a
@@ -67,6 +67,11 @@ copied here:
     -C <client>
         Specify the client name explicitly.
 
+    -d <date>
+        Supply a date to get the hours worked on that day. This is equivalent
+        to using -s -f "MM/DD/YYYY 00:00:00" -t "MM/DD/YYYY 23:59:59", where
+        "MM/DD/YYYY" is the given date, in any format. Implies -s.
+
     -e
         Open the timeclock file in VIM. Which timeclock file is opened depends
         on the value of -t.
@@ -80,10 +85,13 @@ copied here:
         Go to the directory linked to a project. (non-functional as a script.
         Save this as a function to use this feature)
 
-    -h <date>
-        Supply a date to get the hours worked on that day. This is equivalent
-        to using -s -f "MM/DD/YYYY 00:00:00" -t "MM/DD/YYYY 23:59:59", where
-        "MM/DD/YYYY" is the given date, in any format. Implies -s.
+    -G
+        Go to the $PUNCHDIR.
+
+    -h
+        Echo the current command in hcl, the Harvest time tracking command line
+        interface. Currently limited to `hcl resume` and `hcl stop`, which
+        don't require further input.
 
     -i
         Use / show the last IN record in the timeclock.
@@ -148,22 +156,22 @@ copied here:
     Several shell command aliases are defined for common tasks:
 
         p        punch
+        pbk      punch -A
         pd       punch -d
+        pdv      punch -vd
         pe       punch -e
         pg       punch -g
+        pgg      punch -G
         pgr      punch -gr
-        ph       punch -h
-        phv      punch -vh
         pin      punch -a
-        pbk      punch -A
         pk       punch -k
         pkv      punch -kv
         pl       punch -l
         plr      punch -lr
         pr       punch -r
-        pt       punch -t
-        pss      $PUNCHDIR/status/start.sh
         psp      $PUNCHDIR/status/stop.sh
+        pss      $PUNCHDIR/status/start.sh
+        pt       punch -t
 
     BUGS
     If a block of time crosses midnight, it is counted in the day in which it
