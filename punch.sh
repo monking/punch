@@ -319,13 +319,13 @@ function punch {
         hours="$(formatSeconds $projectSum minutes hours)"
         if [ -z "$client" ]; then
           case "$format" in
-            spreadsheet ) echo "$fYMD	$hours	$lineClient	${lineAction//_/ }";;
-            * ) echo "$(pad $((7 - ${#hours})))$hours  $lineClient$(pad $(($maxClLen - ${#lineClient})))  ${lineAction//_/ }";;
+            spreadsheet ) echo "$fYMD	$hours	$lineClient	${lineProject//_/ }";;
+            * ) echo "$(pad $((7 - ${#hours})))$hours  $lineClient$(pad $(($maxClLen - ${#lineClient})))  ${lineProject//_/ }";;
           esac
         else
           case "$format" in
-            spreadsheet ) echo "$fYMD	$hours	${lineAction//_/ }";;
-            * ) echo "$(pad $((7 - ${#hours})))$hours  ${lineAction//_/ }";;
+            spreadsheet ) echo "$fYMD	$hours	${lineProject//_/ }";;
+            * ) echo "$(pad $((7 - ${#hours})))$hours  ${lineProject//_/ }";;
           esac
         fi
       done
