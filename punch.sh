@@ -191,7 +191,7 @@ function punch {
   if [ ! -d "$clientMarker/$project" ]; then
     mkdir -p "$clientMarker/$project"
   fi
-  wdmarker="$clientMarker/$project/.working_directory"
+  wdmarker="$clientMarker/$project/working_directory"
   if [ "$makeLink" = y ]; then
     unlink "$wdmarker" 2>/dev/null
     ln -s "$wd" "$wdmarker"
