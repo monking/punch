@@ -570,20 +570,21 @@ function canon {
 #---------------------------------------------------------#
 #                       ALIASES                           #
 #---------------------------------------------------------#
-alias p="punch"
-alias pe="punch -e"
-alias pg="punch -g"
-alias pgg="punch -G"
-alias pgr="punch -gr"
-alias pd="punch -d"
-alias pdv="punch -vd"
-alias pin="punch -a"
-alias pbk="punch -A"
-alias pk="punch -k"
-alias pkv="punch -kv"
-alias pl="punch -l"
-alias plr="punch -lr"
-alias pr="punch -r"
-alias pt="punch -t"
-alias pss="$PUNCHDIR/status/start.sh"
-alias psp="$PUNCHDIR/status/stop.sh"
+alias p='punch'
+alias pe='punch -e'
+alias pg='punch -g'
+alias pgg='punch -G'
+alias pgr='punch -gr'
+alias pd='punch -d'
+alias pdv='punch -vd'
+alias pin='punch -a'
+alias pbk='punch -A'
+alias pk='punch -k'
+alias pkv='punch -kv'
+alias pl='punch -l'
+alias plr='punch -lr'
+alias pr='punch -r'
+alias pt='punch -t'
+alias pw='while true; do echo -en "\n\n\n\n\n\n\n\n\n\n$(punch -r)"; sleep 2; done'
+alias pss='$PUNCHDIR/status/start.sh'
+alias psp='$PUNCHDIR/status/stop.sh'
