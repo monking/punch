@@ -8,7 +8,7 @@ function refresh_punch {
     punch -r > "$statusPath"
     punch -I >> "$statusPath"
     punch -kiqm minimal >> "$statusPath"
-    sleep 5
+    sleep 1
   done
 }
 pid_file="`dirname $0`/.status_pid"
