@@ -6,8 +6,8 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local onBreak T Y Z a action b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn filterTerm to today uTime verbose wd wdmarker writeFile writePaid year
-  while getopts "cC:d:jJ:t:sSf:pk:wevlgGhriIoaAm:nq" flag
+  local onBreak T Y Z a action actionFilter b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  while getopts "cC:d:jJ:t:sSf:pl:wevkgGhriIoaAm:nq" flag
   do
     case $flag in
       a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -24,8 +24,8 @@ function punch {
       I ) readLog=firstInLine;;
       j ) projectReq=y;clientReq=y;;
       J ) project="$OPTARG";;
-      k ) filterTerm="$OPTARG";dosum=y;verbose=y;;
-      l ) makeLink=y;clientReq=y;projectReq=y;;
+      k ) makeLink=y;clientReq=y;projectReq=y;;
+      l ) actionFilter="$OPTARG";dosum=y;verbose=y;;
       m ) format="$OPTARG";;
       n ) today=y;dosum=y;;
       o ) readLog=lastOutLine;;
@@ -237,11 +237,6 @@ function punch {
       projectTitle="PROJECT"
       actionTitle="ACTION"
       sum=0; lastUTime=0; projects=""; actions=""; readYear=$fYear; readMonth=$fMonth; maxPrLen=${#projectTitle}; maxClLen=${#clientTitle};
-			if [[ -n $filterTerm ]]; then
-				filter='grep '"$filterTerm"
-			else # no filter
-				filter="cat"
-			fi
       while [ $readYear$readMonth -le $year$month ]; do
         readFile="$TIMECLOCKDIR/workclock_${readYear}_${readMonth}.csv"
         if [ -r "$readFile" ]; then
@@ -268,7 +263,7 @@ function punch {
               lastUTime=0
             fi
             if [ $lineUTime -gt $fUTime -a $lineUTime -lt $uTime ]; then
-              if [ "$lineIO" = "i" -a \( -z "$client" -o "$lineClient" = "$client" \) -a \( -z "$project" -o "$lineProject" = "$project" \) ]; then
+							if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep -c "$actionFilter") -gt 0 ) ) ]]; then
                 if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
                 if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
                 lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
@@ -280,7 +275,7 @@ function punch {
                 lastAction=""
               fi
             fi
-					done <<< "$(cat "$readFile" | $filter)"
+					done < "$readFile"
         fi
         if [ -a "$(command -v gdate)" ]; then
           read readYear readMonth <<< $(gdate --date="$readMonth/1/$readYear +1 month" "+%Y %m")
@@ -587,9 +582,9 @@ alias pin='punch -a'
 alias pbk='punch -A'
 alias pn='punch -n'
 alias pnv='punch -nv'
-alias pl='punch -l'
-alias plr='punch -lr'
 alias pk='punch -k'
+alias pkr='punch -kr'
+alias pl='punch -l'
 alias pr='punch -r'
 alias pt='punch -t'
 alias pss='$PUNCHDIR/status/start.sh'
