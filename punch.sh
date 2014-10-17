@@ -263,7 +263,7 @@ function punch {
               lastUTime=0
             fi
             if [ $lineUTime -gt $fUTime -a $lineUTime -lt $uTime ]; then
-							if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep -c "$actionFilter") -gt 0 ) ) ]]; then
+							if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep -ic "$actionFilter") -gt 0 ) ) ]]; then
                 if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
                 if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
                 lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
