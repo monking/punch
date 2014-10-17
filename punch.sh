@@ -81,7 +81,7 @@ function punch {
     return 0
   fi
   writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.csv"
-  read latestfile other <<< $(ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
+  read latestfile other <<< $(\ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
   if [ -n "$latestfile" ]; then
     if [ "$readLog" = lastInLine ]; then
       while read -e line; do
