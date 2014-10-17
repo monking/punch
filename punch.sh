@@ -6,8 +6,8 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local onBreak T Y Z a action actionFilter b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
-  while getopts "cC:d:jJ:t:sSf:pl:wevkgGhriIoaAm:nq" flag
+  local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nq" flag
   do
     case $flag in
       a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -26,6 +26,7 @@ function punch {
       J ) project="$OPTARG";;
       k ) makeLink=y;clientReq=y;projectReq=y;;
       l ) actionFilter="$OPTARG";dosum=y;verbose=y;;
+      L ) actionFilter="$OPTARG";actionFilterInvert=y;dosum=y;verbose=y;;
       m ) format="$OPTARG";;
       n ) today=y;dosum=y;;
       o ) readLog=lastOutLine;;
@@ -216,7 +217,7 @@ function punch {
   elif [ "$dosum" = y ]; then
 
     function punchsum {
-      local T Y Z a actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
+      local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
       sumFrom="$1"
       sumTo="$2"
       if [ -z "$quiet" -a "$(uname | perl -pe 's/.*CYGWIN.*/CYGWIN/i')" = "CYGWIN" ]; then
@@ -237,6 +238,10 @@ function punch {
       projectTitle="PROJECT"
       actionTitle="ACTION"
       sum=0; lastUTime=0; projects=""; actions=""; readYear=$fYear; readMonth=$fMonth; maxPrLen=${#projectTitle}; maxClLen=${#clientTitle};
+			actionFilterOptions="-ic"
+			if [[ $actionFilterInvert = y ]]; then
+				actionFilterOptions="-v $actionFilterOptions"
+			fi
       while [ $readYear$readMonth -le $year$month ]; do
         readFile="$TIMECLOCKDIR/workclock_${readYear}_${readMonth}.csv"
         if [ -r "$readFile" ]; then
@@ -263,7 +268,7 @@ function punch {
               lastUTime=0
             fi
             if [ $lineUTime -gt $fUTime -a $lineUTime -lt $uTime ]; then
-							if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep -ic "$actionFilter") -gt 0 ) ) ]]; then
+							if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep $actionFilterOptions "$actionFilter") -gt 0 ) ) ]]; then
                 if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
                 if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
                 lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
