@@ -1,5 +1,7 @@
-(function() {
-	var statusMessage, timerTimeout, timerDuration, timerMessage,
+/* global w d */
+
+(function(w, d) {
+	var timerTimeout, timerDuration, timerMessage, updateSize, timerClass,
 	durationInputPattern, createTimer, dingTimer, notification;
 
   timerTimeout = null;
@@ -8,7 +10,7 @@
 
   createTimer = function() {
     var inputMatch;
-    timerDuration = window.prompt('timer: minutes and mssage (e.g. "5 tea")');
+    timerDuration = w.prompt('timer: minutes and mssage (e.g. "5 tea")');
     clearTimeout(timerTimeout);
     if (timerDuration) {
       inputMatch = timerDuration.match(durationInputPattern);
@@ -16,13 +18,13 @@
         timerDuration = inputMatch[1];
         timerMessage = inputMatch[2];
       }
-      if (window.webkitNotifications && window.webkitNotifications.checkPermission() != 0) {
-        window.webkitNotifications.requestPermission();
+      if (w.webkitNotifications && w.webkitNotifications.checkPermission() !== 0) {
+        w.webkitNotifications.requestPermission();
       }
       timerTimeout = setTimeout(dingTimer, timerDuration * 60000);
-      document.querySelector('#status .elapsed').className = 'elapsed timer';
+      d.querySelector('#status .elapsed').className = 'elapsed timer';
     } else {
-      document.querySelector('#status .elapsed').className = 'elapsed';
+      d.querySelector('#status .elapsed').className = 'elapsed';
     }
   };
 
@@ -30,26 +32,26 @@
     var title, message;
     title = 'punch';
     message = timerMessage || 'DING!';
-    document.querySelector('#status .elapsed').className = 'elapsed';
+    d.querySelector('#status .elapsed').className = 'elapsed';
     timerTimeout = null;
-    if (!/^file:/.test(window.location.href) && window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) {
-      notification = window.webkitNotifications.createNotification('na.png', title, message);
+    if (!/^file:/.test(w.location.href) && w.webkitNotifications && w.webkitNotifications.checkPermission() === 0) {
+      notification = w.webkitNotifications.createNotification('na.png', title, message);
       notification.show();
     } else {
-      window.alert(title + ': ' + message);
+      w.alert(title + ': ' + message);
     }
   };
 
   updateSize = function() {
-    document.body.style.fontSize = (window.innerWidth / 100) + 'px';
-  }
+    d.body.style.fontSize = (w.innerWidth / 100) + 'px';
+  };
 
-  window.onload = function() {
+  w.onload = function() {
 
-		var handlStatus = function(hash) {
+		var handleStatus = function(hash) {
 			var statusElement;
 
-			statusElement = document.getElementById('status');
+			statusElement = d.getElementById('status');
 
 			statusElement.innerHTML = '<div class="time">' +
 				'<div class="today">' + hash.today + '</div>' +
@@ -65,13 +67,13 @@
 			timerClass = (timerTimeout !== null ? ' timer' : '');
 		};
 
-		window.statusDriver.repeat(handleStatus, 5000);
+		w.statusDriver.repeat(handleStatus, 5000);
     updateSize();
-    window.onresize = updateSize;
+    w.onresize = updateSize;
   };
 
-  window.createTimer = createTimer;
-  window.dingTimer = dingTimer;
-  window.timerTimeout = timerTimeout;
+  w.createTimer = createTimer;
+  w.dingTimer = dingTimer;
+  w.timerTimeout = timerTimeout;
 
-})();
+})(window, document);

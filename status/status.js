@@ -1,5 +1,5 @@
 /*
- * global: module, require
+ * global: process, require, window, XMLHttpRequest
  */
 
 (function() {
@@ -8,7 +8,7 @@
 
 	status = {
 
-		pattern: /(.*) -- (.*)   (.*)   ([\d:]+) \(([\d:]+)\)\n(.*) -- (.*)   (.*)   ([\d:]+) \(([\d:]+)\)\n.*\n\s*([0-9:]+)\s+(.*)/,
+		pattern: /(.*) -- (.*) {3}(.*) {3}([\d:]+) \(([\d:]+)\)\n(.*) -- (.*) {3}(.*) {3}([\d:]+) \(([\d:]+)\)\n.*\n\s*([0-9:]+)\s+(.*)/,
 
 		message: null,
 
@@ -95,10 +95,13 @@
 			request = new XMLHttpRequest();
 			request.open('GET', freshPath, true);
 			request.onreadystatechange = function() {
-				if (request.readyState == 4
-				&& (request.status == 0 || request.status == 200)
-				&& request.responseText) { // local filesystem gives status of 0
-					callback(request.responseText);
+				if (request.readyState === 4) {
+					if ((request.status === 0 || request.status === 200)
+					&& request.responseText) { // local filesystem gives status of 0
+						callback(null, request.responseText);
+					} else {
+						callback(request.responseText, null);
+					}
 				}
 			};
 			request.send();
