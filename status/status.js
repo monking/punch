@@ -53,6 +53,8 @@
 			self.interval = setInterval(function() {
 				self.update(handler);
 			}, period);
+
+			self.update(handler);
 		}
 
 	};

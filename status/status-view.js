@@ -4,6 +4,8 @@
 	var timerTimeout, timerDuration, timerMessage, updateSize, timerClass,
 	durationInputPattern, createTimer, dingTimer, notification;
 
+	timerClass = '';
+
   timerTimeout = null;
 
   durationInputPattern = /^([0-9.]+)( (.*))?/;
