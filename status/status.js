@@ -60,14 +60,14 @@
 	};
 
 	if (typeof process !== 'undefined') { // node process
-		var commands, fs, sys, clc, toMinutes, degree;
+		var commands, fs, sys, clc, toMinutes, formatByDegree;
 
 		fs = require('fs');
 		sys = require('sys');
 		clc = require('cli-color');
 
 		toMinutes = function(time) {
-			var timeParts, minutes;
+			var timeParts;
 
 			if (typeof time !== 'string') {
 				return time;
@@ -82,12 +82,12 @@
 			return Number(timeParts[0]);
 		};
 
-		degree = function(originalValue, min, max) {
-			var value, degrees;
+		formatByDegree = function(originalValue, max, min) {
+			var value, degrees, degree;
 
 			value = toMinutes(originalValue);
-			min = toMinutes(min);
 			max = toMinutes(max);
+			min = min ? toMinutes(min) : 0;
 
 			degrees = [
 				clc.blue,
@@ -96,7 +96,8 @@
 				clc.red
 			];
 
-			degree = Math.max(Math.floor((value - min) / (max - min) / degrees.length), degrees.length - 1);
+			degree = Math.floor((value - min) / (max - min) * degrees.length);
+			degree = Math.min(degree, degrees.length - 1);
 
 			return degrees[degree](originalValue);
 
@@ -113,10 +114,10 @@
 				status.repeat(function(hash) {
 					var output;
 
-					output = '[' + clc.red(hash.today) +
-					' ' + clc.yellow(hash.elapsed) +
-					' ' + clc.(hash.break) + ']' +
-					' ' + hash.client+'/'+hash.project+' -- '+ hash.task;
+					output = '[' + formatByDegree(hash.today, '8:00') + ' today' +
+					', ' + formatByDegree(hash.elapsed, '5:00') + ' now'+
+					', ' + formatByDegree(hash.break, '4:00') + ' since break]' +
+					'\n' + hash.client+'/'+hash.project+' -- '+ hash.task;
 
 					sys.print(clc.reset+output);
 				});
