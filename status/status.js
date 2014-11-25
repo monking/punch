@@ -76,7 +76,7 @@
 			timeParts = time.split(':');
 
 			if (timeParts.length === 2) {
-				return Number(timeParts[0] * 60 + timeParts[1]);
+				return Number(timeParts[0]) * 60 + Number(timeParts[1]);
 			}
 
 			return Number(timeParts[0]);
