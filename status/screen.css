@@ -88,7 +88,6 @@ body:before {
   content: "Today";
 }
 #status .elapsed {
-  color: #E300FF;
   cursor: pointer;
 }
 #status .elapsed.timer,
@@ -103,4 +102,23 @@ body:before {
 }
 #status .break:before {
   content: "Since Break";
+}
+
+#status .blue {
+  color: blue;
+}
+#status .cyan {
+  color: cyan;
+}
+#status .green {
+  color: green;
+}
+#status .yellow {
+  color: orange;
+}
+#status .red {
+  color: red;
+}
+#status .magenta {
+  color: #E300FF;
 }

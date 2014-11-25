@@ -51,14 +51,30 @@
   w.onload = function() {
 
 		var handleStatus = function(hash) {
-			var statusElement;
+			var statusElement, todayColor, elapsedColor, breakColor;
 
 			statusElement = d.getElementById('status');
 
+			todayColor = w.statusDriver.colorByDegree(
+				hash.today,
+				w.statusDriver.ranges.today.max,
+				w.statusDriver.ranges.today.min
+			);
+			elapsedColor = w.statusDriver.colorByDegree(
+				hash.elapsed,
+				w.statusDriver.ranges.now.max,
+				w.statusDriver.ranges.now.min
+			);
+			breakColor = w.statusDriver.colorByDegree(
+				hash.break,
+				w.statusDriver.ranges.break.max,
+				w.statusDriver.ranges.break.min
+			);
+
 			statusElement.innerHTML = '<div class="time">' +
-				'<div class="today">' + hash.today + '</div>' +
-				'<div class="elapsed' + timerClass + '" title="Set timer">' + hash.elapsed + '</div>' +
-				'<div class="break">' + hash.break + '</div>' +
+				'<div class="today ' + todayColor + '">' + hash.today + '</div>' +
+				'<div class="elapsed ' + elapsedColor + ' ' + timerClass + '" title="Set timer">' + hash.elapsed + '</div>' +
+				'<div class="break ' + breakColor + '">' + hash.break + '</div>' +
 				'</div>' +
 				'<div class="client">' + hash.client + '</div>' +
 				' <div class="project">' + hash.project + '</div>' +
