@@ -60,11 +60,47 @@
 	};
 
 	if (typeof process !== 'undefined') { // node process
-		var commands, fs, sys, clc, term;
+		var commands, fs, sys, clc, toMinutes, degree;
 
 		fs = require('fs');
 		sys = require('sys');
 		clc = require('cli-color');
+
+		toMinutes = function(time) {
+			var timeParts, minutes;
+
+			if (typeof time !== 'string') {
+				return time;
+			}
+
+			timeParts = time.split(':');
+
+			if (timeParts.length === 2) {
+				return Number(timeParts[0] * 60 + timeParts[1]);
+			}
+
+			return Number(timeParts[0]);
+		};
+
+		degree = function(originalValue, min, max) {
+			var value, degrees;
+
+			value = toMinutes(originalValue);
+			min = toMinutes(min);
+			max = toMinutes(max);
+
+			degrees = [
+				clc.blue,
+				clc.green,
+				clc.yellow,
+				clc.red
+			];
+
+			degree = Math.max(Math.floor((value - min) / (max - min) / degrees.length), degrees.length - 1);
+
+			return degrees[degree](originalValue);
+
+		};
 
 		status.getFile = function(path, callback) {
 			var absolutePath = __dirname+'/'+path;
@@ -73,19 +109,16 @@
 
 		if (process.argv.length > 2) {
 			commands = process.argv.slice(2);
-			term = {
-				clear: '\033[2J'+"\r"
-			};
-			if ('watch' == commands[0]) {
+			if ('watch' === commands[0]) {
 				status.repeat(function(hash) {
 					var output;
 
 					output = '[' + clc.red(hash.today) +
 					' ' + clc.yellow(hash.elapsed) +
-					' ' + clc.blue(hash.break) + ']' +
+					' ' + clc.(hash.break) + ']' +
 					' ' + hash.client+'/'+hash.project+' -- '+ hash.task;
 
-					sys.print(term.clear+output);
+					sys.print(clc.reset+output);
 				});
 			}
 		}
