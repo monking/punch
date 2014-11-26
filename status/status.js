@@ -105,7 +105,7 @@
 				"red"
 			];
 
-			degree = Math.floor((value - min) / (max - min) * degrees.length);
+			degree = Math.floor((value - min) / (max - min) * (degrees.length - 1)); // only exceeding max gives last color
 			degree = Math.min(degree, degrees.length - 1);
 
 			return degrees[degree];
