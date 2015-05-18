@@ -5,9 +5,12 @@
 # their own lines:
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
+function whisper() {
+	[[ $verbose = y ]] && echo $@ >&2
+}
 function punch {
-  local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
-  while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nq" flag
+  local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime externalID format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line lineArray makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nqx:" flag
   do
     case $flag in
       a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -38,6 +41,7 @@ function punch {
       t ) to="$OPTARG";;
       v ) verbose=y;dosum=y;;
       w ) writePaid=y;clientReq=y;;
+      x ) externalID=$OPTARG;;
     esac
   done
   shift $((OPTIND-1)); OPTIND=1
@@ -88,14 +92,28 @@ function punch {
     if [ "$readLog" = lastInLine ]; then
       while read -e line; do
         if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
-          read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
+					eval "lineArray=($(echo $line | sed 's/,/ /g'))"
+					pUTime="${lineArray[0]}"
+					pDate="${lineArray[1]}" # a d b Y T Z
+					pIO="${lineArray[2]}"
+					pClient="${lineArray[3]}"
+					pProject="${lineArray[4]}"
+					pAction="${lineArray[5]}"
+					pExtID="${lineArray[6]}"
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = previousInLine ]; then
       previousLine=
       while read -e line; do
         if [ -n "$previousLine" ]; then
-          read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$previousLine" | perl -pe 's/"([^"]+)",?/$1/g')"
+					eval lineArray=($(echo $previousLine | sed 's/,//g'))
+					pUTime="${lineArray[0]}"
+					pDate="${lineArray[1]}" # a d b Y T Z
+					pIO="${lineArray[2]}"
+					pClient="${lineArray[3]}"
+					pProject="${lineArray[4]}"
+					pAction="${lineArray[5]}"
+					pExtID="${lineArray[6]}"
         fi
         if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
           previousLine=$line
@@ -108,27 +126,49 @@ function punch {
           onBreak=y
         elif [ $onBreak = y ]; then
           onBreak=n
-          read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
+					eval lineArray=($(echo $line | sed 's/,//g'))
+					pUTime="${lineArray[0]}"
+					pDate="${lineArray[1]}" # a d b Y T Z
+					pIO="${lineArray[2]}"
+					pClient="${lineArray[3]}"
+					pProject="${lineArray[4]}"
+					pAction="${lineArray[5]}"
+					pExtID="${lineArray[6]}"
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
         if [ "${line/\"*\", \"*\", \"o\", */y}" = y ]; then
-          read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(echo "$line" | perl -pe 's/"([^"]+)",?/$1/g')"
+					eval lineArray=($(echo $line | sed 's/,//g'))
+					pUTime="${lineArray[0]}"
+					pDate="${lineArray[1]}" # a d b Y T Z
+					pIO="${lineArray[2]}"
+					pClient="${lineArray[3]}"
+					pProject="${lineArray[4]}"
+					pAction="${lineArray[5]}"
+					pExtID="${lineArray[6]}"
         fi
       done <<< "$(tail -50 "$latestfile")"
     else
-      read pUTime pa pb pd pT pZ pY pInOut pClient pProject pAction <<< "$(tail -1 "$latestfile" | perl -pe 's/"([^"]+)",?/$1/g')"
+			eval lineArray=($(tail -1 "$latestfile" | sed 's/,//g'))
+			pUTime="${lineArray[0]}"
+			pDate="${lineArray[1]}" # a d b Y T Z
+			pIO="${lineArray[2]}"
+			pClient="${lineArray[3]}"
+			pProject="${lineArray[4]}"
+			pAction="${lineArray[5]}"
+			pExtID="${lineArray[6]}"
     fi
+
     if [[ $resumeIn = y ]]; then
       action="$pAction"
+      externalID="$pExtID"
       if [[ $pInOut = o ]]; then
         hclAction="resume"
       else
         hclAction="note"
       fi
     fi
-    pDate="$pa $pd $pb $pY $pT $pZ"
   fi
   if [ ! -a "$CLIENTSDIR" ]; then
     mkdir -p "$CLIENTSDIR"
@@ -203,8 +243,8 @@ function punch {
     cd "$(readlink "$wdmarker")"
   fi
   if [[ -n "$action" ]]; then
-    echo "$client -- $project   $action   ($date)"
-    echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\"" >> "$writeFile"
+    echo "$client -- $project   $action   #$externalID   ($date)"
+    echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\", \"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
 
     if [[ $harvest = y && -n $hclAction ]]; then
@@ -217,7 +257,7 @@ function punch {
   elif [ "$dosum" = y ]; then
 
     function punchsum {
-      local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
+      local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineExtID lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
       sumFrom="$1"
       sumTo="$2"
       if [ -z "$quiet" -a "$(uname | perl -pe 's/.*CYGWIN.*/CYGWIN/i')" = "CYGWIN" ]; then
@@ -253,7 +293,16 @@ function punch {
             if [ -z "$quiet" ]; then
               echo -ne "  computing $readYear/$readMonth ($numLines entries) -- $((${onLine}*100/${numLines}))%\r"
             fi
-            read lineUTime a d b Y T Z lineIO lineClient lineProject lineAction <<< "$( echo $line | perl -pe 's/"([^"]+)",?/$1/g')"
+
+						eval lineArray=($(echo $line | sed 's/,/ /g'))
+            lineUTime="${lineArray[0]}"
+						lineDate="${lineArray[1]}" # a d b Y T Z
+            lineIO="${lineArray[2]}"
+            lineClient="${lineArray[3]}"
+            lineProject="${lineArray[4]}"
+            lineAction="${lineArray[5]}"
+            lineExtID="${lineArray[6]}"
+
             if [ "$lastUTime" -ne 0 ]; then
               period="$(expr $lineUTime - $lastUTime)"
               if [ -z "$(eval "echo \$sum_$lastProject")" ]; then
@@ -412,7 +461,7 @@ function punch {
     fi
     return 0
   elif [ -n "$readLog" ]; then
-    echo "$pClient -- $pProject   $pAction   $(echo $pT | perl -pe 's/:\d+$//') ($(formatSeconds $(($uTime - $pUTime)) minutes hours))"
+    echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') ($(formatSeconds $(($uTime - $pUTime)) minutes hours))"
     return 0
   fi
 }
