@@ -32,6 +32,8 @@ utility doesn't allow formatting a date other than NOW.
 Usage
 -----
 
+**TODO: this README needs to be updated. See the source for more detailed info.**
+
 The script defines many aliases for itself. The most commonly used are:
 - `p <task>`to switch to a task
 - `p [out|break|lunch]` to punch out quickly with a mildly descriptive message
