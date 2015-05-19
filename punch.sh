@@ -5,11 +5,9 @@
 # their own lines:
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
-function whisper() {
-  [[ $verbose = y ]] && echo $@ >&2
-}
 function punch {
   local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime externalID format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line lineArray makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  ## parse arguments
   while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nqx:" flag
   do
     case $flag in
@@ -46,14 +44,16 @@ function punch {
   done
   shift $((OPTIND-1)); OPTIND=1
   wd="$PWD"
+  ## read input message (description)
   action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')" 
   if [ -z "$action$readLog$addToIndex" -a "$dosum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
     bold=$(tput bold)
     normal=$(tput sgr0)
-    # echo "see the manpage for usage info. (man punch)"
+    ## show the manpage if not enough arguments given to do anything
     man $PUNCHDIR/.punch.1.gz
     return 0
   fi
+  ## default value: format, text editor
   if [ "$(echo $format | perl -pe 's/default|minimal|spreadsheet/y/')" != y ]; then
     format=default
   fi
@@ -65,10 +65,12 @@ function punch {
     minimal ) ;;
     spreadsheet ) quiet=y;;
   esac
+  ## take the user to the timeclock document directory
   if [ "$goToTimeclockDir" = y ]; then
     cd $TIMECLOCKDIR
     return 0
   fi
+  ## default value: end date (varies if logging up to now, or a whole day)
   if [ -z "$to" ]; then
     if [ -n "$oneDay" ]; then
       to="$oneDay 23:59:59"
@@ -76,6 +78,7 @@ function punch {
       to="now"
     fi
   fi
+  ### bash hack: underscores # discard [
   if [ -n "$(command -v gdate)" ]; then
     read year month uTime date <<< $(gdate --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
   else
@@ -86,9 +89,13 @@ function punch {
     echo "ERROR: invalid time"
     return 0
   fi
+  ### ] discard
+  ## determine to which file to write
   writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.csv"
+  ## get the last filename, when sorted alphanumerically
   read latestfile other <<< $(\ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
   if [ -n "$latestfile" ]; then
+    ## gather context for the command: what was the last relevant entry?
     if [ "$readLog" = lastInLine ]; then
       while read -e line; do
         if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
@@ -170,12 +177,15 @@ function punch {
       fi
     fi
   fi
+  ## store client/project metadata (1/?)
   if [ ! -a "$CLIENTSDIR" ]; then
     mkdir -p "$CLIENTSDIR"
   fi
+  ## if the user is indending to add an entry, gather all necessary info from input or sheet context
   if [ -n "$action" ]; then
     clientReq=y
     projectReq=y
+    ## determine if the entry is logging in or out
     if [[ $action =~ ^(stop|out|break|lunch|done)(:.*)?$ ]]; then
       readLog=lastLine
       io=o
@@ -198,6 +208,7 @@ function punch {
       fi
       printf "client$clientDefault: "
       cd "$CLIENTSDIR/"
+      ## if no client provided, prompt with autocomplete of previously logged clients
       read -e client
       cd "$wd"
       if [ -z "$client" ]; then
@@ -205,7 +216,9 @@ function punch {
       fi
     fi
   fi
+  ### bash hack: underscores
   client="$(echo $client | perl -pe 's/\/|\n|\r//g' | perl -pe 's/[^\w]+/_/g')"
+  ## write client metadata
   clientMarker="$CLIENTSDIR/$client"
   if [ ! -d "$clientMarker" ]; then
     mkdir "$clientMarker"
@@ -222,6 +235,7 @@ function punch {
       fi
       printf "project$projectDefault: "
       cd "$clientMarker"
+      ## if no project, prompt for project name with autocomplete of previous projects on this client
       read -e project
       cd "$wd"
       if [ -z "$project" ]; then
@@ -229,24 +243,30 @@ function punch {
       fi
     fi
   fi
+  ### bash hack: underscores
   project="$(echo $project | perl -pe 's/\/|\n|\r//g' | perl -pe 's/[^\w]+/_/g')"
   if [ ! -d "$clientMarker/$project" ]; then
     mkdir -p "$clientMarker/$project"
   fi
+  ## project metadata: symlink to working directory
   wdmarker="$clientMarker/$project/working_directory"
   if [ "$makeLink" = y ]; then
     unlink "$wdmarker" 2>/dev/null
     ln -s "$wd" "$wdmarker"
     echo "link established"
   fi
+  ## if user desires, go to the project's working directory
   if [ "$goToDir" = y ]; then
     cd "$(readlink "$wdmarker")"
   fi
   if [[ -n "$action" ]]; then
+    ## show summary of new entry
     echo "$client -- $project   $action   #$externalID   ($date)"
+    ## write new entry to file
     echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\", \"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
 
+    ### harvest integration: discard [
     if [[ $harvest = y && -n $hclAction ]]; then
       if [[ $hclAction = note ]]; then
         hcl $hclAction $action
@@ -254,8 +274,10 @@ function punch {
         hcl $hclAction
       fi
     fi
+    ### ] discard
   elif [ "$dosum" = y ]; then
 
+    ## sum between two dates, filtering by client, project, external ID, or text search
     function punchsum {
       local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineExtID lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
       sumFrom="$1"
@@ -421,6 +443,7 @@ function punch {
       fi
     }
 
+    ## determine sum start date for different behaviors (one day, last pay period start)
     if [ -n "$oneDay" ]; then
       from="$oneDay 00:00:00"
     elif [ "$fromPaid" = y ]; then
@@ -432,6 +455,7 @@ function punch {
       from="$month/1/$year"
     fi
     if [ "$dailySum" = y ]; then
+      ## print out the sums for each day separately
       if [ -a "$(command -v gdate)" ]; then
         fUTime=$(gdate --date="$from" "+%s")
       else
@@ -451,9 +475,11 @@ function punch {
         dayCount=$((dayCount+1))
       done
     else
+      ## OR print out one sum for the whole time period
       punchsum "$from" "$to"
     fi
   elif [ "$readLog" = "whole" ]; then
+    ## open the desired timesheet in the text editor
     if [ -r "$writeFile" ]; then
       $TIMECLOCKEDITOR "$writeFile"
     else
@@ -461,6 +487,7 @@ function punch {
     fi
     return 0
   elif [ -n "$readLog" ]; then
+    ## show the previous line from the timesheet, formatted and showing time running
     echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') ($(formatSeconds $(($uTime - $pUTime)) minutes hours))"
     return 0
   fi
@@ -469,6 +496,7 @@ function punch {
 #---------------------------------------------------------#
 #                   NUMBER FORMATTING                     #
 #---------------------------------------------------------#
+## pad a string with any character (e.g. " " or "0")
 function pad {
   local len str pad padAmt 
   if [ -n "$1" ]; then
@@ -494,6 +522,7 @@ function pad {
   fi
   echo -n $str
 }
+## turn seconds input to string output as HH:MM:SS
 function formatSeconds {
   local dayPlural days formatted granularity hours minutes maxScale scale seconds unit unitPlural
   if [ -z "$1" ]; then
@@ -591,6 +620,7 @@ function formatSeconds {
   fi
   echo -n "$formatted"
 }
+## find the full path of a file or directory, following all symlinks
 function canon {
   local wd PHYS_DIR RESULT TARGET_FILE
   TARGET_FILE=$1
@@ -625,6 +655,7 @@ function canon {
 #---------------------------------------------------------#
 #                       ALIASES                           #
 #---------------------------------------------------------#
+## preset shortcut shell aliases
 alias p='punch'
 alias pe='punch -e'
 alias pg='punch -g'
