@@ -1,0 +1,69 @@
+{
+  "client": {
+    "alias": "c",
+    "describe": "Client name"
+  },
+  "job": {
+    "alias": "j",
+    "describe": "Job name"
+  },
+  "external": {
+    "alias": "x",
+    "describe": "External ID"
+  },
+  "message": {
+    "alias": "m",
+    "describe": "Message",
+    "default": ""
+  },
+  "time": {
+    "alias": "t",
+    "describe": "(end) time",
+    "default": "now"
+  },
+  "start": {
+    "alias": "s",
+    "describe": "start time (sum mode)",
+    "default": "00:00:00"
+  },
+  "grep": {
+    "alias": "g",
+    "describe": "grep-compatible filter"
+  },
+  "yes": {
+    "alias": "y",
+    "describe": "assume default/previous values for any empty paramters"
+  },
+  "verbose": {
+    "alias": "v",
+    "describe": "show every project"
+  },
+  "sum": {
+    "describe": "switch to sum mode. write mode by default"
+  },
+  "edit": {
+    "describe": "open sheet in text editor (value of env $EDITOR)"
+  },
+  "go": {
+    "describe": "open the working directory on the specified project (if specified earlier with --link)"
+  },
+  "link": {
+    "describe": "record the current directory s the working directory for this project"
+  },
+  "today": {
+    "describe": "set start and end times to 0000:00 and 23:59:59"
+  },
+  "last": {
+    "describe": "read last line from timesheet"
+  },
+  "paid": {
+    "describe": "if writing, set this as the latest paid date for this client. set start time to the last paid date, if recorded on the current project"
+  },
+  "daily": {
+    "describe": "print a sum for each day separately"
+  },
+  "format": {
+    "describe": "format: normal, minimal, tsv, csv (default: normal)",
+    "default": "normal"
+  }
+}

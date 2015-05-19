@@ -2,6 +2,7 @@
   "name": "punch",
   "version": "0.2.0",
   "dependencies": {
-    "cli-color": "^0.3.2"
+    "cli-color": "^0.3.2",
+    "nconf": "^0.7.1"
   }
 }
