@@ -250,14 +250,27 @@ function punch {
   fi
   ## project metadata: symlink to working directory
   wdmarker="$clientMarker/$project/working_directory"
+  branch_marker="$clientMarker/$project/working_branch"
   if [ "$makeLink" = y ]; then
     unlink "$wdmarker" 2>/dev/null
     ln -s "$wd" "$wdmarker"
+    branch="$(git branch | grep '\*' | sed 's/^\* //')"
+    [[ -n "$branch" ]] && echo -n "$branch" > "$branch_marker"
     echo "link established"
   fi
   ## if user desires, go to the project's working directory
   if [ "$goToDir" = y ]; then
     cd "$(readlink "$wdmarker")"
+    if [[ -f  "$branch_marker" ]]; then
+      current_branch="$(git branch | grep '\*' | sed 's/^\* //')"
+      linked_branch="$(cat "$branch_marker")"
+      if [[ -n "$current_branch" && -n "$linked_branch" && "$current_branch" != "$linked_branch" ]]; then
+        read -p "Checkout $linked_branch? [Y/n]"
+        if [[ "$REPLY" =~ ^([yY].*)?$ ]]; then
+          git checkout "$linked_branch"
+        fi
+      fi
+    fi
   fi
   if [[ -n "$action" ]]; then
     ## show summary of new entry
