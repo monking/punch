@@ -244,7 +244,7 @@ function punch {
     fi
   fi
   ### bash hack: underscores
-  project="$(echo $project | perl -pe 's/\/|\n|\r//g' | perl -pe 's/[^\w]+/_/g')"
+  project="$(basename "$project" | perl -pe 's/\/|\n|\r//g' | perl -pe 's/[^\w]+/_/g')"
   if [ ! -d "$clientMarker/$project" ]; then
     mkdir -p "$clientMarker/$project"
   fi
@@ -322,7 +322,7 @@ function punch {
         if [ -r "$readFile" ]; then
           numLines=$(grep -c '^' "$readFile")
           onLine=0
-          while read -e line; do
+          while read line; do
             if [ -z "$line" ]; then continue; fi
             onLine=$(($onLine + 1))
             if [ -z "$quiet" ]; then
