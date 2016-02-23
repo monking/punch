@@ -356,7 +356,7 @@ function punch {
                 if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
                 if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
                 lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
-                lastAction="${lastProject}__$(echo "$lineAction" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
+                lastAction="${lastProject}__$(echo "$lineAction" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')__$lineExtID"
                 lastUTime=$lineUTime
               else 
                 lastUTime=0
@@ -431,17 +431,17 @@ function punch {
         fi
         for action in $actions; do
           eval "actionSum=\$sum_$action"
-          read lineClient lineProject lineAction <<< $(echo $action | perl -pe 's/__+/ /g')
+          read lineClient lineProject lineAction lineExtID <<< $(echo $action | perl -pe 's/__+/ /g')
           hours="$(formatSeconds $actionSum minutes hours)"
           if [ -z "$client" ]; then
             case "$format" in
               spreadsheet ) echo "$fYMD  $hours  $lineClient  $lineProject  ${lineAction//_/ }";;
-              * ) echo "$(pad $((7 - ${#hours})))$hours  $(pad $(($maxClLen - ${#lineClient})))$lineClient  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ }";;
+              * ) echo "$(pad $((7 - ${#hours})))$hours  $(pad $(($maxClLen - ${#lineClient})))$lineClient  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ } #$lineExtID";;
             esac
           else
             case "$format" in
               spreadsheet ) echo "$fYMD  $hours  $lineProject  ${lineAction//_/ }";;
-              * ) echo "$(pad $((7 - ${#hours})))$hours  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ }";;
+              * ) echo "$(pad $((7 - ${#hours})))$hours  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ } #$lineExtID";;
             esac
           fi
         done
