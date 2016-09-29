@@ -501,7 +501,7 @@ function punch {
     return 0
   elif [ -n "$readLog" ]; then
     ## show the previous line from the timesheet, formatted and showing time running
-    echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') ($(formatSeconds $(($uTime - $pUTime)) minutes hours))"
+    echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($uTime - $pUTime)) minutes hours) ago ($pDate)"
     return 0
   fi
 }
