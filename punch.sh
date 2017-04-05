@@ -259,17 +259,23 @@ function punch {
     echo "link established"
   fi
   ## if user desires, go to the project's working directory
-  if [ "$goToDir" = y ]; then
-    cd "$(readlink "$wdmarker")"
-    if [[ -f  "$branch_marker" ]]; then
-      current_branch="$(git branch | grep '\*' | sed 's/^\* //')"
-      linked_branch="$(cat "$branch_marker")"
-      if [[ -n "$current_branch" && -n "$linked_branch" && "$current_branch" != "$linked_branch" ]]; then
-        read -p "Checkout $linked_branch? [Y/n]"
-        if [[ "$REPLY" =~ ^([yY].*)?$ ]]; then
-          git checkout "$linked_branch"
+  if [[ "$goToDir" = y ]]; then
+    if [[ -L "$wdmarker" ]]; then
+      cd "$(readlink "$wdmarker")"
+      if [[ -f  "$branch_marker" ]]; then
+        current_branch="$(git branch | grep '\*' | sed 's/^\* //')"
+        linked_branch="$(cat "$branch_marker")"
+        if [[ -n "$current_branch" && -n "$linked_branch" && "$current_branch" != "$linked_branch" ]]; then
+          read -p "Checkout $linked_branch? [Y/n]"
+          if [[ "$REPLY" =~ ^([yY].*)?$ ]]; then
+            git checkout "$linked_branch"
+          fi
         fi
       fi
+    elif [[ -d "$wdmarker" ]]; then
+      read -ep "Which directory do you want? $(ls -1 "$wdmarker")"
+    else
+      echo "No working directory is set for this project. Make one with the -k option."
     fi
   fi
   if [[ -n "$action" ]]; then
