@@ -91,15 +91,15 @@ function punch {
   fi
   ### ] discard
   ## determine to which file to write
-  writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.csv"
+  writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.tsv"
   ## get the last filename, when sorted alphanumerically
-  read latestfile other <<< $(\ls -r1 $TIMECLOCKDIR/workclock_*.csv 2>/dev/null)
+  read latestfile other <<< $(\ls -r1 $TIMECLOCKDIR/workclock_*.tsv 2>/dev/null)
   if [ -n "$latestfile" ]; then
     ## gather context for the command: what was the last relevant entry?
     if [ "$readLog" = lastInLine ]; then
       while read -e line; do
-        if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
-          eval "lineArray=($(echo $line | sed 's/,/ /g'))"
+        if [ "${line/\"*\"	\"*\"	\"i\"	*/y}" = y ]; then
+          eval "lineArray=($line)"
           pUTime="${lineArray[0]}"
           pDate="${lineArray[1]}" # a d b Y T Z
           pIO="${lineArray[2]}"
@@ -122,18 +122,18 @@ function punch {
           pAction="${lineArray[5]}"
           pExtID="${lineArray[6]}"
         fi
-        if [ "${line/\"*\", \"*\", \"i\", */y}" = y ]; then
+        if [ "${line/\"*\"	\"*\"	\"i\"	*/y}" = y ]; then
           previousLine=$line
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = firstInLine ]; then
       onBreak=n
       while read -e line; do
-        if [ "${line/\"*\", \"*\", \"o\", */y}" = y ]; then
+        if [ "${line/\"*\"	\"*\"	\"o\"	*/y}" = y ]; then
           onBreak=y
         elif [ $onBreak = y ]; then
           onBreak=n
-          eval lineArray=($(echo $line | sed 's/,//g'))
+          eval lineArray=($line)
           pUTime="${lineArray[0]}"
           pDate="${lineArray[1]}" # a d b Y T Z
           pIO="${lineArray[2]}"
@@ -145,8 +145,8 @@ function punch {
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
-        if [ "${line/\"*\", \"*\", \"o\", */y}" = y ]; then
-          eval lineArray=($(echo $line | sed 's/,//g'))
+        if [ "${line/\"*\"	\"*\"	\"o\"	*/y}" = y ]; then
+          eval lineArray=($line)
           pUTime="${lineArray[0]}"
           pDate="${lineArray[1]}" # a d b Y T Z
           pIO="${lineArray[2]}"
@@ -157,7 +157,7 @@ function punch {
         fi
       done <<< "$(tail -50 "$latestfile")"
     else
-      eval lineArray=($(tail -1 "$latestfile" | sed 's/,//g'))
+      eval lineArray=($(tail -1 "$latestfile"))
       pUTime="${lineArray[0]}"
       pDate="${lineArray[1]}" # a d b Y T Z
       pIO="${lineArray[2]}"
@@ -282,7 +282,7 @@ function punch {
     ## show summary of new entry
     echo "$client -- $project   $action   #$externalID   ($date)"
     ## write new entry to file
-    echo "\"$uTime\", \"$date\", \"$io\", \"$client\", \"$project\", \"$action\", \"$externalID\"" >> "$writeFile"
+    echo "\"$uTime\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
 
     ### harvest integration: discard [
@@ -324,7 +324,7 @@ function punch {
         actionFilterOptions="-v $actionFilterOptions"
       fi
       while [ $readYear$readMonth -le $year$month ]; do
-        readFile="$TIMECLOCKDIR/workclock_${readYear}_${readMonth}.csv"
+        readFile="$TIMECLOCKDIR/workclock_${readYear}_${readMonth}.tsv"
         if [ -r "$readFile" ]; then
           numLines=$(grep -c '^' "$readFile")
           onLine=0
@@ -335,7 +335,7 @@ function punch {
               echo -ne "  computing $readYear/$readMonth ($numLines entries) -- $((${onLine}*100/${numLines}))%\r"
             fi
 
-            eval lineArray=($(echo $line | sed 's/,/ /g'))
+            eval lineArray=($line)
             lineUTime="${lineArray[0]}"
             lineDate="${lineArray[1]}" # a d b Y T Z
             lineIO="${lineArray[2]}"
