@@ -37,7 +37,7 @@ function punch {
       s ) dosum=y;;
       S ) dosum=y;dailySum=y;format=minimal;;
       t ) to="$OPTARG";;
-      v ) verbose=y;dosum=y;;
+      v ) verbose=y;;
       w ) writePaid=y;clientReq=y;;
       x ) externalID=$OPTARG;;
     esac
@@ -45,7 +45,7 @@ function punch {
   shift $((OPTIND-1)); OPTIND=1
   wd="$PWD"
   ## read input message (description)
-  action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')" 
+  action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
   if [ -z "$action$readLog$addToIndex" -a "$dosum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
     bold=$(tput bold)
     normal=$(tput sgr0)
@@ -98,7 +98,7 @@ function punch {
     ## gather context for the command: what was the last relevant entry?
     if [ "$readLog" = lastInLine ]; then
       while read -e line; do
-        if [ "${line/\"*\"	\"*\"	\"i\"	*/y}" = y ]; then
+        if [ "${line/\"*\"  \"*\"  \"i\"  */y}" = y ]; then
           eval "lineArray=($line)"
           pUTime="${lineArray[0]}"
           pDate="${lineArray[1]}" # a d b Y T Z
@@ -122,14 +122,14 @@ function punch {
           pAction="${lineArray[5]}"
           pExtID="${lineArray[6]}"
         fi
-        if [ "${line/\"*\"	\"*\"	\"i\"	*/y}" = y ]; then
+        if [ "${line/\"*\"  \"*\"  \"i\"  */y}" = y ]; then
           previousLine=$line
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = firstInLine ]; then
       onBreak=n
       while read -e line; do
-        if [ "${line/\"*\"	\"*\"	\"o\"	*/y}" = y ]; then
+        if [ "${line/\"*\"  \"*\"  \"o\"  */y}" = y ]; then
           onBreak=y
         elif [ $onBreak = y ]; then
           onBreak=n
@@ -145,7 +145,7 @@ function punch {
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
-        if [ "${line/\"*\"	\"*\"	\"o\"	*/y}" = y ]; then
+        if [ "${line/\"*\"  \"*\"  \"o\"  */y}" = y ]; then
           eval lineArray=($line)
           pUTime="${lineArray[0]}"
           pDate="${lineArray[1]}" # a d b Y T Z
@@ -282,7 +282,7 @@ function punch {
     ## show summary of new entry
     echo "$client -- $project   $action   #$externalID   ($date)"
     ## write new entry to file
-    echo "\"$uTime\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
+    echo "\"$uTime\"  \"$date\"  \"$io\"  \"$client\"  \"$project\"  \"$action\"  \"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
 
     ### harvest integration: discard [
@@ -364,7 +364,7 @@ function punch {
                 lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
                 lastAction="${lastProject}__$(echo "$lineAction" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')__$lineExtID"
                 lastUTime=$lineUTime
-              else 
+              else
                 lastUTime=0
                 lastProject=""
                 lastAction=""
@@ -451,7 +451,7 @@ function punch {
             esac
           fi
         done
-        case "$format" in 
+        case "$format" in
           spreadsheet ) ;;
           * ) echo "----------------------------------------------------";;
         esac
@@ -507,7 +507,11 @@ function punch {
     return 0
   elif [ -n "$readLog" ]; then
     ## show the previous line from the timesheet, formatted and showing time running
-    echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($uTime - $pUTime)) minutes hours) ago ($pDate)"
+    if [ "$verbose" = y ]; then
+      echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($uTime - $pUTime)) minutes hours) ago ($pDate)"
+    else
+      echo "$pAction ($(( ($uTime - $pUTime) / 60)) minutes)"
+    fi
     return 0
   fi
 }
@@ -517,7 +521,7 @@ function punch {
 #---------------------------------------------------------#
 ## pad a string with any character (e.g. " " or "0")
 function pad {
-  local len str pad padAmt 
+  local len str pad padAmt
   if [ -n "$1" ]; then
     len=$1
   else
@@ -605,7 +609,7 @@ function formatSeconds {
   else
     scale=1
   fi
-  
+
   if [ $granularity -gt $scale ]; then
     # echo -n "0 $unitPlural"
     echo -n "0:00"
@@ -656,7 +660,7 @@ function canon {
     TARGET_FILE=`basename $TARGET_FILE`
   done
 
-  # Compute the canonicalized name by finding the physical path 
+  # Compute the canonicalized name by finding the physical path
   # for the directory we're in and appending the target file.
   PHYS_DIR=`pwd -P`
   RESULT=$PHYS_DIR/
@@ -695,3 +699,34 @@ alias pss='$PUNCHDIR/status/start.sh'
 alias psp='$PUNCHDIR/status/stop.sh'
 # alias pw='while true; do echo -en "\n\n\n\n\n\n\n\n\n\n$(punch -r)"; sleep 2; done'
 alias pw='pss; node $DESKDIR/punch/status/status.js watch' # more info, a little bit slower since it relies on pss
+
+announce_pid_file_path="$PUNCHDIR/.announce.pid"
+function announce_task() {
+  if [[ -f "$announce_pid_file_path" ]]; then
+    stop_announce
+  fi
+  if [[ -z $1 ]]; then
+    interval_in_minutes=15
+  else
+    interval_in_minutes=$1
+  fi
+  while true; do
+    sleep $(($interval_in_minutes * 60)) # interval: 5 minutes
+    last_line="$(punch -r)"
+    last_in_line="$(punch -i)"
+    if [[ "$last_line" = "$last_in_line" ]]; then
+      echo "working on: $(punch -r)" | say -r 250
+    fi
+  done &
+  echo $! > "$announce_pid_file_path"
+  echo "Will call out the current task every $interval_in_minutes minutes"
+  echo "Do \`stop_announce\` to stop"
+}
+function stop_announce() {
+  if [[ -f "$announce_pid_file_path" ]]; then
+    pid=$(cat "$announce_pid_file_path")
+    kill $pid &>/dev/null || echo "no process with PID: $pid" && rm "$announce_pid_file_path"
+  else
+    echo "No running process (i.e. no $announce_pid_file_path file)"
+  fi
+}
