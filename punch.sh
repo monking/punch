@@ -718,7 +718,9 @@ function announce_task() {
       echo "working on: $(punch -r)" | say -r 250
     fi
   done &
-  echo $! > "$announce_pid_file_path"
+  announce_pid=$!
+  disown $announce_pid
+  echo $announce_pid > "$announce_pid_file_path"
   echo "Will call out the current task every $interval_in_minutes minutes"
   echo "Do \`stop_announce\` to stop"
 }
