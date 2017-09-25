@@ -6,7 +6,8 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum fUTime externalID format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line lineArray makeLink month normal oneDay other pAction pClient pDate pInOut pProject pT pUTime pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today uTime verbose wd wdmarker writeFile writePaid year
+  local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum durationInSeconds fUTime externalID format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line lineArray makeLink month normal oneDay other previousAction previousClient previousDate pInOut previousProject pT previousUnixTimestamp pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today unixTimestamp verbose wd wdmarker writeFile writePaid year
+
   ## parse arguments
   while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nqx:" flag
   do
@@ -80,9 +81,9 @@ function punch {
   fi
   ### bash hack: underscores # discard [
   if [ -n "$(command -v gdate)" ]; then
-    read year month uTime date <<< $(gdate --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+    read year month unixTimestamp date <<< $(gdate --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
   else
-    read year month uTime date <<< $(date --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+    read year month unixTimestamp date <<< $(date --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
   fi
   date="${date//_/ }"
   if [ -z "$year" -o -z "$month" ]; then
@@ -100,13 +101,13 @@ function punch {
       while read -e line; do
         if [ "${line/\"*\"  \"*\"  \"i\"  */y}" = y ]; then
           eval "lineArray=($line)"
-          pUTime="${lineArray[0]}"
-          pDate="${lineArray[1]}" # a d b Y T Z
-          pIO="${lineArray[2]}"
-          pClient="${lineArray[3]}"
-          pProject="${lineArray[4]}"
-          pAction="${lineArray[5]}"
-          pExtID="${lineArray[6]}"
+          previousUnixTimestamp="${lineArray[0]}"
+          previousDate="${lineArray[1]}" # a d b Y T Z
+          previousIO="${lineArray[2]}"
+          previousClient="${lineArray[3]}"
+          previousProject="${lineArray[4]}"
+          previousAction="${lineArray[5]}"
+          previousExtID="${lineArray[6]}"
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = previousInLine ]; then
@@ -114,13 +115,13 @@ function punch {
       while read -e line; do
         if [ -n "$previousLine" ]; then
           eval lineArray=($(echo $previousLine | sed 's/,//g'))
-          pUTime="${lineArray[0]}"
-          pDate="${lineArray[1]}" # a d b Y T Z
-          pIO="${lineArray[2]}"
-          pClient="${lineArray[3]}"
-          pProject="${lineArray[4]}"
-          pAction="${lineArray[5]}"
-          pExtID="${lineArray[6]}"
+          previousUnixTimestamp="${lineArray[0]}"
+          previousDate="${lineArray[1]}" # a d b Y T Z
+          previousIO="${lineArray[2]}"
+          previousClient="${lineArray[3]}"
+          previousProject="${lineArray[4]}"
+          previousAction="${lineArray[5]}"
+          previousExtID="${lineArray[6]}"
         fi
         if [ "${line/\"*\"  \"*\"  \"i\"  */y}" = y ]; then
           previousLine=$line
@@ -134,42 +135,42 @@ function punch {
         elif [ $onBreak = y ]; then
           onBreak=n
           eval lineArray=($line)
-          pUTime="${lineArray[0]}"
-          pDate="${lineArray[1]}" # a d b Y T Z
-          pIO="${lineArray[2]}"
-          pClient="${lineArray[3]}"
-          pProject="${lineArray[4]}"
-          pAction="${lineArray[5]}"
-          pExtID="${lineArray[6]}"
+          previousUnixTimestamp="${lineArray[0]}"
+          previousDate="${lineArray[1]}" # a d b Y T Z
+          previousIO="${lineArray[2]}"
+          previousClient="${lineArray[3]}"
+          previousProject="${lineArray[4]}"
+          previousAction="${lineArray[5]}"
+          previousExtID="${lineArray[6]}"
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
         if [ "${line/\"*\"  \"*\"  \"o\"  */y}" = y ]; then
           eval lineArray=($line)
-          pUTime="${lineArray[0]}"
-          pDate="${lineArray[1]}" # a d b Y T Z
-          pIO="${lineArray[2]}"
-          pClient="${lineArray[3]}"
-          pProject="${lineArray[4]}"
-          pAction="${lineArray[5]}"
-          pExtID="${lineArray[6]}"
+          previousUnixTimestamp="${lineArray[0]}"
+          previousDate="${lineArray[1]}" # a d b Y T Z
+          previousIO="${lineArray[2]}"
+          previousClient="${lineArray[3]}"
+          previousProject="${lineArray[4]}"
+          previousAction="${lineArray[5]}"
+          previousExtID="${lineArray[6]}"
         fi
       done <<< "$(tail -50 "$latestfile")"
     else
       eval lineArray=($(tail -1 "$latestfile"))
-      pUTime="${lineArray[0]}"
-      pDate="${lineArray[1]}" # a d b Y T Z
-      pIO="${lineArray[2]}"
-      pClient="${lineArray[3]}"
-      pProject="${lineArray[4]}"
-      pAction="${lineArray[5]}"
-      pExtID="${lineArray[6]}"
+      previousUnixTimestamp="${lineArray[0]}"
+      previousDate="${lineArray[1]}" # a d b Y T Z
+      previousIO="${lineArray[2]}"
+      previousClient="${lineArray[3]}"
+      previousProject="${lineArray[4]}"
+      previousAction="${lineArray[5]}"
+      previousExtID="${lineArray[6]}"
     fi
 
     if [[ $resumeIn = y ]]; then
-      action="$pAction"
-      externalID="$pExtID"
+      action="$previousAction"
+      externalID="$previousExtID"
       if [[ $pInOut = o ]]; then
         hclAction="resume"
       else
@@ -200,11 +201,11 @@ function punch {
     projectReq=y
   fi
   if [ -z "$client" -a "$clientReq" == y ]; then
-    if [ -n "$pClient" -a -n "$readLog" ]; then
-      client=$pClient
+    if [ -n "$previousClient" -a -n "$readLog" ]; then
+      client=$previousClient
     else
-      if [ -n "$pClient" ]; then
-        clientDefault=" [$pClient]"
+      if [ -n "$previousClient" ]; then
+        clientDefault=" [$previousClient]"
       fi
       printf "client$clientDefault: "
       cd "$CLIENTSDIR/"
@@ -212,7 +213,7 @@ function punch {
       read -e client
       cd "$wd"
       if [ -z "$client" ]; then
-        client="$pClient"
+        client="$previousClient"
       fi
     fi
   fi
@@ -227,11 +228,11 @@ function punch {
     echo "$from" > "$clientMarker/.paid"
   fi
   if [ -z "$project" -a "$projectReq" == y ]; then
-    if [ -n "$pProject" -a -n "$readLog" ]; then
-      project=$pProject
+    if [ -n "$previousProject" -a -n "$readLog" ]; then
+      project=$previousProject
     else
-      if [ -n "$pProject" ]; then
-        projectDefault=" [$pProject]"
+      if [ -n "$previousProject" ]; then
+        projectDefault=" [$previousProject]"
       fi
       printf "project$projectDefault: "
       cd "$clientMarker"
@@ -239,7 +240,7 @@ function punch {
       read -e project
       cd "$wd"
       if [ -z "$project" ]; then
-        project="$pProject"
+        project="$previousProject"
       fi
     fi
   fi
@@ -282,7 +283,7 @@ function punch {
     ## show summary of new entry
     echo "$client -- $project   $action   #$externalID   ($date)"
     ## write new entry to file
-    echo "\"$uTime\"  \"$date\"  \"$io\"  \"$client\"  \"$project\"  \"$action\"  \"$externalID\"" >> "$writeFile"
+    echo "\"$unixTimestamp\"  \"$date\"  \"$io\"  \"$client\"  \"$project\"  \"$action\"  \"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
 
     ### harvest integration: discard [
@@ -298,7 +299,7 @@ function punch {
 
     ## sum between two dates, filtering by client, project, external ID, or text search
     function punchsum {
-      local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineExtID lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo uTime year
+      local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineExtID lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo unixTimestamp year
       sumFrom="$1"
       sumTo="$2"
       if [ -z "$quiet" -a "$(uname | perl -pe 's/.*CYGWIN.*/CYGWIN/i')" = "CYGWIN" ]; then
@@ -306,10 +307,10 @@ function punch {
       fi
       if [ -n "$(command -v gdate)" ]; then
         read fYear fMonth fUTime fDate fSDate fYMD <<< $(gdate --date="$sumFrom" "+%Y %m %s %a_%b_%d_%T_%Z_%Y %a_%m/%d %Y/%m/%d")
-        read year month uTime date <<< $(gdate --date="$sumTo" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+        read year month unixTimestamp date <<< $(gdate --date="$sumTo" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
       else
         read fYear fMonth fUTime fDate fSDate fYMD <<< $(date --date="$sumFrom" "+%Y %m %s %a_%b_%d_%T_%Z_%Y %a_%m/%d %Y/%m/%d")
-        read year month uTime date <<< $(date --date="$sumTo" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+        read year month unixTimestamp date <<< $(date --date="$sumTo" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
       fi
       fDate="${fDate//_/ }"
       fSDate="${fSDate//_/ }"
@@ -357,7 +358,7 @@ function punch {
               sum="$(expr $sum + $period)"
               lastUTime=0
             fi
-            if [ $lineUTime -gt $fUTime -a $lineUTime -lt $uTime ]; then
+            if [ $lineUTime -gt $fUTime -a $lineUTime -lt $unixTimestamp ]; then
               if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep $actionFilterOptions "$actionFilter") -gt 0 ) ) ]]; then
                 if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
                 if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
@@ -382,7 +383,7 @@ function punch {
         echo -ne "                     \r"
       fi
       if [ "$lastUTime" -ne 0 ]; then
-        period=$(($uTime - $lastUTime))
+        period=$(($unixTimestamp - $lastUTime))
         if [ -z "$(eval "echo \$sum_$lastProject")" ]; then
           projects="$projects $lastProject"
         fi
@@ -480,8 +481,8 @@ function punch {
       else
         fUTime=$(date --date="$from" "+%s")
       fi
-      dayMax=$(((uTime - fUTime) / 86400))
-      if [ $(((uTime - fUTime) % 86400)) -ne 0 ]; then
+      dayMax=$(((unixTimestamp - fUTime) / 86400))
+      if [ $(((unixTimestamp - fUTime) % 86400)) -ne 0 ]; then
         dayMax=$((dayMax+1))
       fi
       dayCount=0
@@ -508,9 +509,14 @@ function punch {
   elif [ -n "$readLog" ]; then
     ## show the previous line from the timesheet, formatted and showing time running
     if [ "$verbose" = y ]; then
-      echo "$pClient -- $pProject   $pAction    #$pExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($uTime - $pUTime)) minutes hours) ago ($pDate)"
+      echo "$previousClient -- $previousProject   $previousAction    #$previousExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
     else
-      echo "$pAction ($(( ($uTime - $pUTime) / 60)) minutes)"
+      durationInSeconds=$(($unixTimestamp - $previousUnixTimestamp))
+      if [[ $durationInSeconds -gt 3600 ]]; then
+        echo "$previousAction ($(( $durationInSeconds / 3600)) hours $(( $durationInSeconds % 3600 / 60)) minutes)"
+      else
+        echo "$previousAction ($(( $durationInSeconds / 60)) minutes)"
+      fi
     fi
     return 0
   fi
