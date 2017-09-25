@@ -511,11 +511,16 @@ function punch {
     if [ "$verbose" = y ]; then
       echo "$previousClient -- $previousProject   $previousAction    #$previousExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
     else
+      local hours minutes
       durationInSeconds=$(($unixTimestamp - $previousUnixTimestamp))
-      if [[ $durationInSeconds -gt 3600 ]]; then
-        echo "$previousAction ($(( $durationInSeconds / 3600)) hours $(( $durationInSeconds % 3600 / 60)) minutes)"
+      hours=$(( $durationInSeconds / 3600))
+      minutes=$(( $durationInSeconds % 3600 / 60))
+      [[ $minutes -gt 1 ]] && minutesUnit="minutes" || minutesUnit="minute"
+      if [[ $hours -gt 0 ]]; then
+        [[ $hours -gt 1 ]] && hoursUnit="hours" || hoursUnit="hour"
+        echo "$previousAction ($hours $hoursUnit $minutes $minutesUnit)"
       else
-        echo "$previousAction ($(( $durationInSeconds / 60)) minutes)"
+        echo "$previousAction ($(( $durationInSeconds / 60)) $minutesUnit)"
       fi
     fi
     return 0
