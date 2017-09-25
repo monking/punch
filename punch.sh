@@ -721,7 +721,7 @@ function announce_task() {
     last_line="$(punch -r)"
     last_in_line="$(punch -i)"
     if [[ "$last_line" = "$last_in_line" ]]; then
-      echo "working on: $(punch -r)" | say -r 250
+      echo "working on: $(punch -r)" | say -r 250 -v Samantha
     fi
   done &
   announce_pid=$!
