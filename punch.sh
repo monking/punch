@@ -722,12 +722,12 @@ function announce_task() {
     interval_in_minutes=$1
   fi
   while true; do
-    sleep $(($interval_in_minutes * 60)) # interval: 5 minutes
     last_line="$(punch -r)"
     last_in_line="$(punch -i)"
     if [[ "$last_line" = "$last_in_line" ]]; then
       echo "working on: $(punch -r)" | say -r 250 -v Samantha
     fi
+    sleep $(($interval_in_minutes * 60)) # interval: 5 minutes
   done &
   announce_pid=$!
   disown $announce_pid
