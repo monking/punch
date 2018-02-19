@@ -523,9 +523,9 @@ function punch {
       durationInSeconds=$(($unixTimestamp - $previousUnixTimestamp))
       hours=$(( $durationInSeconds / 3600))
       minutes=$(( $durationInSeconds % 3600 / 60))
-      [[ $minutes -gt 1 ]] && minutesUnit="minutes" || minutesUnit="minute"
+      [[ $minutes -eq 1 ]] && minutesUnit="minute" || minutesUnit="minutes"
       if [[ $hours -gt 0 ]]; then
-        [[ $hours -gt 1 ]] && hoursUnit="hours" || hoursUnit="hour"
+        [[ $hours -eq 1 ]] && hoursUnit="hour" || hoursUnit="hours"
         echo "$previousAction ($hours $hoursUnit $minutes $minutesUnit)"
       else
         echo "$previousAction ($(( $durationInSeconds / 60)) $minutesUnit)"
