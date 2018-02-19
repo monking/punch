@@ -250,6 +250,7 @@ function punch {
     mkdir -p "$clientMarker/$project"
   fi
   ## project metadata: symlink to working directory
+  project_profile="$clientMarker/$project/profile"
   wdmarker="$clientMarker/$project/working_directory"
   branch_marker="$clientMarker/$project/working_branch"
   if [ "$makeLink" = y ]; then
@@ -277,6 +278,13 @@ function punch {
       read -ep "Which directory do you want? $(ls -1 "$wdmarker")"
     else
       echo "No working directory is set for this project. Make one with the -k option."
+    fi
+
+    if [[ -f "$project_profile" ]]; then
+      read -p "Load project profile? [Y/n]"
+      if [[ "$REPLY" =~ ^([yY].*)?$ ]]; then
+        source "$project_profile"
+      fi
     fi
   fi
   if [[ -n "$action" ]]; then
