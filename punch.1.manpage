@@ -1,0 +1,126 @@
+.\" Manpage for punch
+.\" Contact lovejoy.chris@gmail.com to correct errors or typos
+.TH man 8 "18 February 2018" "1.1" "Punch Manual"
+.SH NAME
+punch - Record and calculate timeclock entries
+.SH SYNOPSIS
+punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
+      [-s | -S] [-f <time> | -p | -h | -n] [-wr] [-l <filter>]
+			[-vq | -m <format>] [-d] [-ekg] [<action> | -aA]
+.SH OPTIONS
+-a
+    Resume the last action, not counting breaks.
+
+-A
+    Resume the previous action, not counting breaks (i.e. toggle between two latest tasks).
+
+-c
+    Specify a client. If no other argument supplies the client name, then you will be prompted to enter the name. Previously entered names can be auto-completed using the <TAB> key.
+
+-C <client>
+    Specify the client name explicitly.
+
+-d <date>
+    Supply a date to get the hours worked on that day. This is equivalent to using -s -f "MM/DD/YYYY 00:00:00" -t "MM/DD/YYYY 23:59:59", where "MM/DD/YYYY" is the given date, in any format. Implies -s.
+
+-e
+    Open the timeclock file in VIM. Which timeclock file is opened depends on the value of -t.
+
+-f <time>
+    Set the time from which to start. This can be in any format that GNU date can parse. The default is the first of day of the month specified by -t.
+
+-g
+    Go to the directory linked to a project. (non-functional as a script. Save this as a function to use this feature)
+
+-G
+    Go to $PUNCHDIR
+
+-h
+    Echo the current command in hcl, the Harvest time tracking command line interface. Currently limited to `hcl resume` and `hcl stop`, which don't require further input.
+
+-i
+    Use / show the last IN record in the timeclock.
+
+-I
+    Use / show the most recent IN record that follows a break. Shows how long since you took a break.
+
+-j
+    Enter the project at a prompt, with previous project records available for autocomplete by pressing <TAB>. This is enabled by default when recording an entry in the timeclock.
+
+-J <project>
+    Specify the project name explicitly.
+
+-k
+    Create a link to the current working directory under the given client and project.
+
+-l <filter>
+    Include only tasks with descriptions which match a grep search string.
+
+-L <filter>
+    Exclude tasks with descriptions which match a grep search string.
+
+-m
+    Specify the output format: "default", "minimal", or "spreadsheet".
+
+-n
+    Set the beginning of the time range to midnight today.  Implies -s, overrides -f.
+
+-o
+    Use / show the last OUT record in the timeclock.
+
+-p
+    Use the time stored in the client record as the beginning of the time range (see -w). Implies -s, overrides -f.
+
+-q
+    Do not show percent progress. Use this option when piping stdout.
+
+-r
+    Use / show the last record in the timeclock.
+
+-s
+    Calculate the sum of all the records in a given range, from a specific client if provided.
+
+-S
+    Calculate daily sums of all the records in a given range, from a specific client if provided. Implies "minimal" format.
+
+-t <time>
+    Set the current time for a new timeclock entry, or when summing, set the end of the time range. This can be in any format that GNU date can parse. The default is "now".
+
+-v
+    Show a verbose sum, with totals by task, not just by project.  Implies -s.
+
+-w
+    Write the beginning of the time range to the client record (see -p).
+
+-x EXTERNAL_ID
+    Set the external ID value of an entry.
+.SH ALIASES
+Several shell command aliases are defined for common tasks:
+
+    p        punch
+    pd       punch -d
+    pe       punch -e
+    pg       punch -g
+    pgr      punch -gr
+    ph       punch -h
+    phv      punch -vh
+    pin      punch -a
+    pbk      punch -A
+    pk       punch -k
+    pkv      punch -kv
+    pl       punch -l
+    plr      punch -lr
+    pr       punch -r
+    pt       punch -t
+    pss      $PUNCHDIR/status/start.sh
+    psp      $PUNCHDIR/status/stop.sh
+.SH BUGS
+If a block of time crosses midnight, it is counted in the day in which it begins, rather than being divided at midnight.
+
+If the last entry in the logs is not "clocking out", then sums which end with that entry will be capped at the end of the period specified.  E.G. Summing with the -k option will treat the task as ending at the current time, while using the -h option will treat it as ending at midnight.
+
+punch rounds all times down to the minute when printing sums, so that the individual sums in a report may not add up exactly to the total shown. The larger number will always be the more accurate.
+.SH AUTHOR
+Christopher Lovejoy <lovejoy.chris@gmail.com>
+.SH COPYRIGHT
+Feel free to use this software, copy or alter it however you like.

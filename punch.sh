@@ -51,7 +51,7 @@ function punch {
     bold=$(tput bold)
     normal=$(tput sgr0)
     ## show the manpage if not enough arguments given to do anything
-    man $PUNCHDIR/.punch.1.gz
+    man $PUNCHDIR/punch.1.gz
     return 0
   fi
   ## default value: format, text editor
