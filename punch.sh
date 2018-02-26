@@ -289,7 +289,11 @@ function punch {
   fi
   if [[ -n "$action" ]]; then
     ## show summary of new entry
-    echo "$client -- $project   $action   #$externalID   ($date)"
+    if [[ -n $externalID ]]; then
+      echo "$client -- $project   $action   #$externalID   ($date)"
+    else
+      echo "$client -- $project   $action   ($date)"
+    fi
     ## write new entry to file
     echo "\"$unixTimestamp\"  \"$date\"  \"$io\"  \"$client\"  \"$project\"  \"$action\"  \"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
