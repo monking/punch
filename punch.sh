@@ -6,7 +6,22 @@
 #     :%s /.\{-\}\(\w\+\)=\(.*\)/\1\r\t\2/
 # then `sort -u` to make `local` list
 function punch {
-  local onBreak T Y Z a action actionFilter actionFilterInvert b bold client clientDefault clientMarker clientReq d dailySum dailySumFrom date dayCount dayMax doit dosum durationInSeconds fUTime externalID format from fromPaid harvest hclAction goToDir goToTimeclockDir io latestfile line lineArray makeLink month normal oneDay other previousAction previousClient previousDate pInOut previousProject pT previousUnixTimestamp pY pZ pa pb pd project projectDefault projectReq quiet readLog resumeIn to today unixTimestamp verbose wd wdmarker writeFile writePaid year
+  local action actionFilter actionFilterInvert actionFilterOptions actions \
+    actionSum actionTitle bold branch branch_marker client clientDefault \
+    clientMarker clientReq clientTitle current_branch dailySum dailySumFrom date \
+    dayCount dayMax dosum durationInSeconds externalID fDate format from fromPaid \
+    fSDate fUTime goToDir goToTimeclockDir harvest hclAction hours hoursTitle \
+    hoursUnit io lastAction lastProject lastUTime lineAction lineArray lineClient \
+    lineDate lineExtID lineIO lineProject lineUTime linked_branch makeLink \
+    maxClLen maxPrLen minutes minutesUnit normal numLines onBreak oneDay onLine \
+    OPTIND period previousAction previousClient previousDate previousExtID \
+    previousIO previousLine previousProject previousUnixTimestamp project \
+    projectDefault projectReq projects projectSum projectTitle project_profile \
+    quiet readFile readLog readMonth readYear resumeIn sum sumFrom sumTo \
+    TIMECLOCKEDITOR to today verbose wd wdmarker writeFile writePaid
+
+
+  client="$PUNCH_CLIENT" # optional
 
   ## parse arguments
   while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nqx:" flag
