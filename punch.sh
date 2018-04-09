@@ -22,6 +22,7 @@ function punch {
 
 
   client="$PUNCH_CLIENT" # optional
+  project="$PUNCH_PROJECT" # optional
 
   ## parse arguments
   while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nqx:" flag
