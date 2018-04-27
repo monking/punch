@@ -1,4 +1,4 @@
-# TODO: `eval lineArray=(...)` are probably responsible for shell characters getting evaluated when reading back info from the sheet. I should be able to put dollar signs and backticks in my timesheet safely
+# TODO: @specialCharacters the several `eval "lineArray=(...)"` (and other evals) are probably responsible for shell characters getting evaluated when reading back info from the sheet. I should be able to put dollar signs and backticks in my timesheet safely
 #---------------------------------------------------------#
 #                          PUNCH                          #
 #---------------------------------------------------------#
@@ -73,6 +73,7 @@ function punch {
   else
     action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
   fi
+  action="$(echo $action | sed "s/\`/'/g")" # FIXME @specialCharacters
   if [ -z "$action$readLog$addToIndex" -a "$dosum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
     bold=$(tput bold)
     normal=$(tput sgr0)
