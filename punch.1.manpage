@@ -5,8 +5,8 @@
 punch - Record and calculate timeclock entries
 .SH SYNOPSIS
 punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
-      [-s | -S] [-f <time> | -p | -h | -n] [-wr] [-l <filter>]
-			[-vq | -m <format>] [-d] [-ekg] [<action> | -aA]
+      [-s | -S] [-f <time> | -P | -h | -n] [-wr] [-l <filter>]
+			[-vq | -m <format>] [-d] [-ekg] [<action> | -aAp]
 .SH OPTIONS
 -a
     Resume the last action, not counting breaks.
@@ -69,6 +69,9 @@ punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
     Use / show the last OUT record in the timeclock.
 
 -p
+    Use the contents of the pasteboard as the action. This is useful when the pasteboard contains characters that would be altered or substituted by the shell if they were pasted directly. Currently only implemented for Mac.
+
+-P
     Use the time stored in the client record as the beginning of the time range (see -w). Implies -s, overrides -f.
 
 -q

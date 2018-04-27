@@ -1,3 +1,4 @@
+# TODO: `eval lineArray=(...)` are probably responsible for shell characters getting evaluated when reading back info from the sheet. I should be able to put dollar signs and backticks in my timesheet safely
 #---------------------------------------------------------#
 #                          PUNCH                          #
 #---------------------------------------------------------#
@@ -18,14 +19,14 @@ function punch {
     previousIO previousLine previousProject previousUnixTimestamp project \
     projectDefault projectReq projects projectSum projectTitle project_profile \
     quiet readFile readLog readMonth readYear resumeIn sum sumFrom sumTo \
-    TIMECLOCKEDITOR to today verbose wd wdmarker writeFile writePaid
-
+    TIMECLOCKEDITOR to today verbose wd wdmarker writeFile writePaid \
+    fromPasteboard
 
   client="$PUNCH_CLIENT" # optional
   project="$PUNCH_PROJECT" # optional
 
   ## parse arguments
-  while getopts "cC:d:jJ:t:sSf:pl:L:wevkgGhriIoaAm:nqx:" flag
+  while getopts "cC:d:jJ:t:sSf:pPl:L:wevkgGhriIoaAm:nqx:" flag
   do
     case $flag in
       a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -48,7 +49,8 @@ function punch {
       m ) format="$OPTARG";;
       n ) today=y;dosum=y;;
       o ) readLog=lastOutLine;;
-      p ) fromPaid=y;clientReq=y;dosum=y;;
+      p ) fromPasteboard=y;;
+      P ) fromPaid=y;clientReq=y;dosum=y;;
       q ) quiet=y;;
       r ) readLog=lastLine;;
       s ) dosum=y;;
@@ -62,12 +64,20 @@ function punch {
   shift $((OPTIND-1)); OPTIND=1
   wd="$PWD"
   ## read input message (description)
-  action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
+  if [[ $fromPasteboard = y ]]; then
+    if [[ $(uname) =~ Darwin ]]; then
+      action="$(pbpaste)"
+    else
+      echo "pastboard only implemented on Mac right now."
+    fi
+  else
+    action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
+  fi
   if [ -z "$action$readLog$addToIndex" -a "$dosum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
     bold=$(tput bold)
     normal=$(tput sgr0)
     ## show the manpage if not enough arguments given to do anything
-    man $PUNCHDIR/punch.1.gz
+    man $PUNCHDIR/punch.1.manpage
     return 0
   fi
   ## default value: format, text editor
@@ -203,7 +213,7 @@ function punch {
     clientReq=y
     projectReq=y
     ## determine if the entry is logging in or out
-    if [[ $action =~ ^(stop|out|break|lunch|done)(:.*)?$ ]]; then
+    if [[ "$action" =~ ^(stop|out|break|lunch|done)(:.*)?$ ]]; then
       readLog=lastLine
       io=o
       if [[ -z $hclAction ]]; then hclAction="stop"; fi
@@ -317,9 +327,9 @@ function punch {
     ### harvest integration: discard [
     if [[ $harvest = y && -n $hclAction ]]; then
       if [[ $hclAction = note ]]; then
-        hcl $hclAction $action
+        hcl "$hclAction" "$action"
       else
-        hcl $hclAction
+        hcl "$hclAction"
       fi
     fi
     ### ] discard
@@ -465,8 +475,8 @@ function punch {
           fi
         fi
         for action in $actions; do
-          eval "actionSum=\$sum_$action"
-          read lineClient lineProject lineAction lineExtID <<< $(echo $action | perl -pe 's/__+/ /g')
+          eval "actionSum=\"\$sum_$action\""
+          read lineClient lineProject lineAction lineExtID <<< $(echo "$action" | perl -pe 's/__+/ /g')
           hours="$(formatSeconds $actionSum minutes hours)"
           if [ -z "$client" ]; then
             case "$format" in
@@ -703,6 +713,7 @@ alias pkr='punch -kr'
 alias pl='punch -l'
 alias pr='punch -r'
 alias pt='punch -t'
+alias pp='punch -p'
 alias pss='$PUNCHDIR/status/start.sh'
 alias psp='$PUNCHDIR/status/stop.sh'
 # alias pw='while true; do echo -en "\n\n\n\n\n\n\n\n\n\n$(punch -r)"; sleep 2; done'
