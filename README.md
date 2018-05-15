@@ -6,7 +6,7 @@ Bash script to track time on projects in CSV files.
 Installation
 ------------
 
-Copy the following into your `~/.bash_rc` file (or `~/.bash_profile`, as the
+Copy the following into your `~/.bashrc` file (or `~/.bash_profile`, as the
 case may be), and modify to suit your file structure:
 
     export PUNCHDIR="$HOME/punch"
