@@ -126,7 +126,7 @@ function punch {
     ## gather context for the command: what was the last relevant entry?
     if [ "$readLog" = lastInLine ]; then
       while read -e line; do
-        if [ "${line/\"*\"  \"*\"  \"i\"  */y}" = y ]; then
+        if [ "${line/\"*\"	\"*\"	\"i\"  */y}" = y ]; then
           eval "lineArray=($line)"
           previousUnixTimestamp="${lineArray[0]}"
           previousDate="${lineArray[1]}" # a d b Y T Z
@@ -150,14 +150,14 @@ function punch {
           previousAction="${lineArray[5]}"
           previousExtID="${lineArray[6]}"
         fi
-        if [ "${line/\"*\"  \"*\"  \"i\"  */y}" = y ]; then
+        if [ "${line/\"*\"	\"*\"	\"i\"  */y}" = y ]; then
           previousLine=$line
         fi
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = firstInLine ]; then
       onBreak=n
       while read -e line; do
-        if [ "${line/\"*\"  \"*\"  \"o\"  */y}" = y ]; then
+        if [ "${line/\"*\"	\"*\"	\"o\"  */y}" = y ]; then
           onBreak=y
         elif [ $onBreak = y ]; then
           onBreak=n
@@ -173,7 +173,7 @@ function punch {
       done <<< "$(tail -50 "$latestfile")"
     elif [ "$readLog" = lastOutLine ]; then
       while read -e line; do
-        if [ "${line/\"*\"  \"*\"  \"o\"  */y}" = y ]; then
+        if [ "${line/\"*\"	\"*\"	\"o\"  */y}" = y ]; then
           eval lineArray=($line)
           previousUnixTimestamp="${lineArray[0]}"
           previousDate="${lineArray[1]}" # a d b Y T Z
@@ -322,7 +322,7 @@ function punch {
       echo "$client -- $project   $action   ($date)"
     fi
     ## write new entry to file
-    echo "\"$unixTimestamp\"  \"$date\"  \"$io\"  \"$client\"  \"$project\"  \"$action\"  \"$externalID\"" >> "$writeFile"
+    echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
 
     ### harvest integration: discard [
