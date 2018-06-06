@@ -551,15 +551,20 @@ function punch {
       echo "$previousClient -- $previousProject   $previousAction    #$previousExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
     else
       local hours minutes
-      durationInSeconds=$(($unixTimestamp - $previousUnixTimestamp))
-      hours=$(( $durationInSeconds / 3600))
-      minutes=$(( $durationInSeconds % 3600 / 60))
-      [[ $minutes -eq 1 ]] && minutesUnit="minute" || minutesUnit="minutes"
-      if [[ $hours -gt 0 ]]; then
-        [[ $hours -eq 1 ]] && hoursUnit="hour" || hoursUnit="hours"
-        echo "$previousAction ($hours $hoursUnit $minutes $minutesUnit)"
+      if [[ -z $previousAction || -z $previousUnixTimestamp ]]; then
+        echo "ERROR: There was a problem reading the previous line of the log."
+        return 1
       else
-        echo "$previousAction ($(( $durationInSeconds / 60)) $minutesUnit)"
+        durationInSeconds=$(($unixTimestamp - $previousUnixTimestamp))
+        hours=$(( $durationInSeconds / 3600))
+        minutes=$(( $durationInSeconds % 3600 / 60))
+        [[ $minutes -eq 1 ]] && minutesUnit="minute" || minutesUnit="minutes"
+        if [[ $hours -gt 0 ]]; then
+          [[ $hours -eq 1 ]] && hoursUnit="hour" || hoursUnit="hours"
+          echo "$previousAction ($hours $hoursUnit $minutes $minutesUnit)"
+        else
+          echo "$previousAction ($(( $durationInSeconds / 60)) $minutesUnit)"
+        fi
       fi
     fi
     return 0
