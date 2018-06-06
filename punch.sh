@@ -402,7 +402,7 @@ function punch {
                 if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
                 if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
                 lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
-                lastAction="${lastProject}__$(echo "$lineAction" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')__$lineExtID"
+                lastAction="${lastProject}__$(echo "$lineAction" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')__$(echo "$lineExtID" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
                 lastUTime=$lineUTime
               else
                 lastUTime=0
