@@ -316,11 +316,10 @@ function punch {
   fi
   if [[ -n "$action" ]]; then
     ## show summary of new entry
-    if [[ -n $externalID ]]; then
-      echo "$client -- $project   $action   #$externalID   ($date)"
-    else
-      echo "$client -- $project   $action   ($date)"
-    fi
+		output="$client -- $project   $action"
+		[[ -n $externalID ]] && output="${output}   (#$externalID)"
+		output="${output}   ($date)"
+		echo "$output"
     ## write new entry to file
     echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
     sort "$writeFile" -o "$writeFile"
@@ -479,17 +478,25 @@ function punch {
           eval "actionSum=\"\$sum_$action\""
           read lineClient lineProject lineAction lineExtID <<< $(echo "$action" | perl -pe 's/__+/ /g')
           hours="$(formatSeconds $actionSum minutes hours)"
+					output=""
           if [ -z "$client" ]; then
             case "$format" in
-              spreadsheet ) echo "$fYMD  $hours  $lineClient  $lineProject  ${lineAction//_/ }";;
-              * ) echo "$(pad $((7 - ${#hours})))$hours  $(pad $(($maxClLen - ${#lineClient})))$lineClient  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ } #$lineExtID";;
+              spreadsheet ) output="${output}$fYMD  $hours  $lineClient  $lineProject  ${lineAction//_/ }";;
+              * )
+								output="${output}$(pad $((7 - ${#hours})))$hours  $(pad $(($maxClLen - ${#lineClient})))$lineClient  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ }"
+								[[ -n "$lineExtID" ]] && output="${output} (#$lineExtID)"
+								;;
             esac
           else
             case "$format" in
-              spreadsheet ) echo "$fYMD  $hours  $lineProject  ${lineAction//_/ }";;
-              * ) echo "$(pad $((7 - ${#hours})))$hours  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ } #$lineExtID";;
+              spreadsheet ) output="${output}$fYMD  $hours  $lineProject  ${lineAction//_/ }";;
+              * ) 
+								output="${output}$(pad $((7 - ${#hours})))$hours  $(pad $(($maxPrLen - ${#lineProject})))$lineProject  ${lineAction//_/ }"
+								[[ -n "$lineExtID" ]] && output="${output} (#$lineExtID)"
+								;;
             esac
           fi
+					echo -e "$output"
         done
         case "$format" in
           spreadsheet ) ;;
@@ -548,7 +555,10 @@ function punch {
   elif [ -n "$readLog" ]; then
     ## show the previous line from the timesheet, formatted and showing time running
     if [ "$verbose" = y ]; then
-      echo "$previousClient -- $previousProject   $previousAction    #$previousExtID  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
+      output="$previousClient -- $previousProject   $previousAction"
+      [[ -n $previousExtID ]] && output="${output}    (#$previousExtID)"
+      output="${output}  $(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
+      echo -e "$output"
     else
       local hours minutes
       if [[ -z $previousAction || -z $previousUnixTimestamp ]]; then
