@@ -10,17 +10,17 @@ function punch {
   local action actionFilter actionFilterInvert actionFilterOptions actions \
     actionSum actionTitle bold branch branch_marker client clientDefault \
     clientMarker clientReq clientTitle current_branch dailySum dailySumFrom date \
-    dayCount dayMax dosum durationInSeconds externalID fDate format from fromPaid \
-    fSDate fUTime goToDir goToTimeclockDir harvest hclAction hours hoursTitle \
-    hoursUnit io lastAction lastProject lastUTime lineAction lineArray lineClient \
-    lineDate lineExtID lineIO lineProject lineUTime linked_branch makeLink \
-    maxClLen maxPrLen minutes minutesUnit normal numLines onBreak oneDay onLine \
-    OPTIND period previousAction previousClient previousDate previousExtID \
-    previousIO previousLine previousProject previousUnixTimestamp project \
-    projectDefault projectReq projects projectSum projectTitle project_profile \
-    quiet readFile readLog readMonth readYear resumeIn sum sumFrom sumTo \
-    TIMECLOCKEDITOR to today verbose wd wdmarker writeFile writePaid \
-    fromPasteboard
+    dayCount dayMax dosum durationInSeconds externalID externalIDPattern fDate \
+    format from fromPaid fSDate fUTime goToDir goToTimeclockDir harvest \
+    hclAction hours hoursTitle hoursUnit io lastAction lastProject lastUTime \
+    lineAction lineArray lineClient lineDate lineExtID lineIO lineProject \
+    lineUTime linked_branch makeLink maxClLen maxPrLen minutes minutesUnit \
+    normal numLines onBreak oneDay onLine OPTIND period previousAction \
+    previousClient previousDate previousExtID previousIO previousLine \
+    previousProject previousUnixTimestamp project projectDefault projectReq \
+    projects projectSum projectTitle project_profile quiet readFile readLog \
+    readMonth readYear resumeIn sum sumFrom sumTo TIMECLOCKEDITOR to today \
+    verbose wd wdmarker writeFile writePaid fromPasteboard
 
   client="$PUNCH_CLIENT" # optional
   project="$PUNCH_PROJECT" # optional
@@ -66,9 +66,19 @@ function punch {
   ## read input message (description)
   if [[ $fromPasteboard = y ]]; then
     if [[ $(uname) =~ Darwin ]]; then
-      action="$(pbpaste)"
+      input="$(pbpaste)"
+
+      # attempt to find an external ID in there
+      # assumes that external IDs will be of the format AB-1345, with any letters and numbers
+      externalIDPattern='^(.*? ?)[^A-Za-z0-9]*([A-Z]+-[0-9]+)[^A-Za-z0-9]*(.*)'
+      externalID="$(echo -n "$input" | perl -pe 's/'"$externalIDPattern"'/\2/')"
+      if [[ $input != $externalID ]]; then
+        action="$(echo -n "$input" | perl -pe 's/'"$externalIDPattern"'/\1\3/')"
+      else
+        action="$input"
+      fi
     else
-      echo "pastboard only implemented on Mac right now."
+      echo "pasteboard input only implemented on Mac right now."
     fi
   else
     action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
