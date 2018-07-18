@@ -1,0 +1,10 @@
+#!/bin/bash
+
+announce_pid_file_path="$PUNCHDIR/.announce.pid"
+
+if [[ -f "$announce_pid_file_path" ]]; then
+  pid=$(cat "$announce_pid_file_path")
+  kill $pid &>/dev/null || echo "no process with PID: $pid" && rm "$announce_pid_file_path"
+else
+  echo "No running process (i.e. no $announce_pid_file_path file)"
+fi

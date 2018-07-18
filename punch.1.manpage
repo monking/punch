@@ -30,10 +30,7 @@ punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
     Set the time from which to start. This can be in any format that GNU date can parse. The default is the first of day of the month specified by -t.
 
 -g
-    Go to the directory linked to a project. (non-functional as a script. Save this as a function to use this feature)
-
--G
-    Go to $PUNCHDIR
+    Echo the directory path linked to a project.
 
 -h
     Echo the current command in hcl, the Harvest time tracking command line interface. Currently limited to `hcl resume` and `hcl stop`, which don't require further input.
