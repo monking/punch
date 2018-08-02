@@ -15,6 +15,9 @@ function whisper() {
 
 client="$PUNCH_CLIENT" # optional
 project="$PUNCH_PROJECT" # optional
+date_format_varied="+%Y %m %s %a_%b_%d_%T_%Z_%Y"
+date_format_year_month="+%Y %m"
+date_format_timestamp="+%s"
 
 . "$(dirname $0)/helpers.sh" # import "pad" and "formatSeconds" functions
 
@@ -124,9 +127,9 @@ if [ -z "$to" ]; then
 fi
 ### bash hack: underscores # discard [
 if [ -n "$(command -v gdate)" ]; then
-  read year month unixTimestamp date <<< $(gdate --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+  read year month unixTimestamp date <<< $(gdate --date="$to" "$date_format_varied")
 else
-  read year month unixTimestamp date <<< $(date --date="$to" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+  read year month unixTimestamp date <<< $(date --date="$to" "$date_format_varied")
 fi
 date="${date//_/ }"
 if [ -z "$year" -o -z "$month" ]; then
@@ -362,11 +365,11 @@ elif [ "$dosum" = y ]; then
       whisper "WARNING: Cygwin calculates very slowly."
     fi
     if [ -n "$(command -v gdate)" ]; then
-      read fYear fMonth fUTime fDate fSDate fYMD <<< $(gdate --date="$sumFrom" "+%Y %m %s %a_%b_%d_%T_%Z_%Y %a_%m/%d %Y/%m/%d")
-      read year month unixTimestamp date <<< $(gdate --date="$sumTo" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+      read fYear fMonth fUTime fDate fSDate fYMD <<< $(gdate --date="$sumFrom" "$date_format_varied %a_%m/%d %Y/%m/%d")
+      read year month unixTimestamp date <<< $(gdate --date="$sumTo" "$date_format_varied")
     else
-      read fYear fMonth fUTime fDate fSDate fYMD <<< $(date --date="$sumFrom" "+%Y %m %s %a_%b_%d_%T_%Z_%Y %a_%m/%d %Y/%m/%d")
-      read year month unixTimestamp date <<< $(date --date="$sumTo" "+%Y %m %s %a_%b_%d_%T_%Z_%Y")
+      read fYear fMonth fUTime fDate fSDate fYMD <<< $(date --date="$sumFrom" "$date_format_varied %a_%m/%d %Y/%m/%d")
+      read year month unixTimestamp date <<< $(date --date="$sumTo" "$date_format_varied")
     fi
     fDate="${fDate//_/ }"
     fSDate="${fSDate//_/ }"
@@ -430,9 +433,9 @@ elif [ "$dosum" = y ]; then
         done < "$readFile"
       fi
       if [ -a "$(command -v gdate)" ]; then
-        read readYear readMonth <<< $(gdate --date="$readMonth/1/$readYear +1 month" "+%Y %m")
+        read readYear readMonth <<< $(gdate --date="$readMonth/1/$readYear +1 month" "$date_format_year_month")
       else
-        read readYear readMonth <<< $(date --date="$readMonth/1/$readYear +1 month" "+%Y %m")
+        read readYear readMonth <<< $(date --date="$readMonth/1/$readYear +1 month" "$date_format_year_month")
       fi
     done
     if [ -z "$quiet" ]; then
@@ -541,9 +544,9 @@ elif [ "$dosum" = y ]; then
   if [ "$dailySum" = y ]; then
     ## print out the sums for each day separately
     if [ -a "$(command -v gdate)" ]; then
-      fUTime=$(gdate --date="$from" "+%s")
+      fUTime=$(gdate --date="$from" "$date_format_timestamp")
     else
-      fUTime=$(date --date="$from" "+%s")
+      fUTime=$(date --date="$from" "$date_format_timestamp")
     fi
     dayMax=$(((unixTimestamp - fUTime) / 86400))
     if [ $(((unixTimestamp - fUTime) % 86400)) -ne 0 ]; then
