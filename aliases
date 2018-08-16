@@ -15,7 +15,11 @@ alias pkr='punch -kr'
 alias pl='punch -l'
 alias pr='punch -r'
 alias pt='punch -t'
-alias pp='punch -p'
+if [[ "$(uname)" =~ Darwin ]]; then
+	alias pp='pbpaste | punch'
+else
+	alias pp='commmand -v xclip &>/dev/null && xclip -o | punch'
+fi
 alias pss='$PUNCHDIR/status/start.sh'
 alias psp='$PUNCHDIR/status/stop.sh'
 # alias pw='while true; do echo -en "\n\n\n\n\n\n\n\n\n\n$(punch -r)"; sleep 2; done'

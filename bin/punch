@@ -22,7 +22,7 @@ date_format_timestamp="+%s"
 . "$(dirname $0)/helpers.sh" # import "pad" and "formatSeconds" functions
 
 ## parse arguments
-while getopts "cC:d:jJ:t:sSf:pPl:L:wevkghriIoaAm:nqx:" flag
+while getopts "cC:d:jJ:t:sSf:Pl:L:wevkghriIoaAm:nqx:X" flag
 do
   case $flag in
     a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -45,7 +45,6 @@ do
     m ) format="$OPTARG";;
     n ) today=y;dosum=y;;
     o ) readLog=lastOutLine;;
-    p ) fromPasteboard=y;;
     P ) fromPaid=y;clientReq=y;dosum=y;;
     q ) quiet=y;;
     r ) readLog=lastLine;;
@@ -55,39 +54,23 @@ do
     v ) verbose=y;;
     w ) writePaid=y;clientReq=y;;
     x ) externalID="$OPTARG";;
+    X ) ignoreExternalID=y;;
   esac
 done
 shift $((OPTIND-1)); OPTIND=1
 wd="$PWD"
 ## read input message (description)
-if [[ $fromPasteboard = y ]]; then
-  if [[ $(uname) =~ Darwin ]]; then
-    pastedInput="$(pbpaste)"
-  else
-		has_xclip=false
-		commmand -v xclip &>/dev/null && has_xclip=true
-		if [[ $has_xclip = true ]]; then
-			pastedInput="$(xclip -o)"
-		else
-			whisper "pasteboard pastedInput only implemented on Mac right now."
-			exit 1
-		fi
-  fi
-
-	if [[ -n "$pastedInput" ]]; then
-		# attempt to find an external ID in there
-		# assumes that external IDs will be of the format AB-1345, with any letters and numbers
+[[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin | perl -pe 's#^\s*(- (\[.\])?)?\s*##')" # strip markdown lists/checkboxes
+if [[ -n "$pipedInput" ]]; then
+	action="$pipedInput"
+	if [[ $ignoreExternalID != y && -z "$externalID" ]]; then
+		# attempt to find an external ID matching the regular expression /[A-Z]+-[0-9]+/
 		externalIDPattern='^(.*? ?)[^A-Za-z0-9]*([A-Z]+-[0-9]+)[^A-Za-z0-9]*(.*)'
-		foundExternalID="$(echo -n "$pastedInput" | perl -pe 's/'"$externalIDPattern"'/\2/')"
-		if [[ "$pastedInput" != "$foundExternalID" ]]; then
+		foundExternalID="$(echo -n "$pipedInput" | perl -pe 's/'"$externalIDPattern"'/\2/')"
+		if [[ "$pipedInput" != "$foundExternalID" ]]; then
 			externalID="$foundExternalID"
-			action="$(echo -n "$pastedInput" | perl -pe 's/'"$externalIDPattern"'/\1\3/')"
-		else
-			action="$pastedInput"
+			action="$(echo -n "$pipedInput" | perl -pe 's/'"$externalIDPattern"'/\1\3/')"
 		fi
-	else
-		whisper "Pasted input is empty."
-		exit 1
 	fi
 else
   action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"

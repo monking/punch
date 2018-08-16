@@ -7,6 +7,9 @@ punch - Record and calculate timeclock entries
 punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
       [-s | -S] [-f <time> | -P | -h | -n] [-wr] [-l <filter>]
 			[-vq | -m <format>] [-d] [-ekg] [<action> | -aAp]
+
+stdin is searched for an external ID matching th reegular expression /[A-Z]+-[0-9]+/ (e.g. ABC-1, or X-123).
+
 .SH OPTIONS
 -a
     Resume the last action, not counting breaks.
@@ -65,9 +68,6 @@ punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
 -o
     Use / show the last OUT record in the timeclock.
 
--p
-    Use the contents of the pasteboard as the action. This is useful when the pasteboard contains characters that would be altered or substituted by the shell if they were pasted directly. Currently only implemented for Mac.
-
 -P
     Use the time stored in the client record as the beginning of the time range (see -w). Implies -s, overrides -f.
 
@@ -90,10 +90,13 @@ punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
     Show a verbose sum, with totals by task, not just by project.  Implies -s.
 
 -w
-    Write the beginning of the time range to the client record (see -p).
+    Write the beginning of the time range to the client record.
 
 -x EXTERNAL_ID
-    Set the external ID value of an entry.
+    Set the external ID value of an entry. Implies -X.
+
+-X
+    Ignore external ID in piped input.
 .SH ALIASES
 Several shell command aliases are defined for common tasks:
 
