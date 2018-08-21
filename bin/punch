@@ -60,8 +60,11 @@ done
 shift $((OPTIND-1)); OPTIND=1
 wd="$PWD"
 ## read input message (description)
-[[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin | perl -pe 's#^\s*(- (\[.\])?)?\s*##')" # strip markdown lists/checkboxes
+[[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin)"
 if [[ -n "$pipedInput" ]]; then
+	pipedInput="$(echo -n "$pipedInput" | perl -pe 's#^\s*(- (\[.\])?)?\s*##')" # strip markdown lists/checkboxes
+	pipedInput="$(echo -n "$pipedInput" | perl -pe 's#\[([^\]]+)\]\s*\([^\)]*\)#\1#g')" # strip regular links
+	pipedInput="$(echo -n "$pipedInput" | perl -pe 's#\[([^\]]+)\]\s*\[[^\]]*\)#\1#g')" # strip named links
 	action="$pipedInput"
 	if [[ $ignoreExternalID != y && -z "$externalID" ]]; then
 		# attempt to find an external ID matching the regular expression /[A-Z]+-[0-9]+/
