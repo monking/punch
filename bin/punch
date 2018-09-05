@@ -13,8 +13,6 @@ function whisper() {
 	[[ $verbose = y ]] && shout "$@"
 }
 
-client="$PUNCH_CLIENT" # optional
-project="$PUNCH_PROJECT" # optional
 date_format_varied="+%Y %m %s %a_%b_%d_%T_%Z_%Y"
 date_format_year_month="+%Y %m"
 date_format_timestamp="+%s"
@@ -29,7 +27,7 @@ do
     A ) resumeIn=y;readLog=previousInLine;clientReq=y;projectReq=y;;
     c ) clientReq=y;;
     C ) client="$OPTARG";;
-    d ) oneDay="$OPTARG";dosum=y;;
+    d ) oneDay="$OPTARG";doSum=y;;
     e ) readLog=whole;;
     f ) from="$OPTARG";;
     g ) goToDir=y;clientReq=y;projectReq=y;;
@@ -40,16 +38,16 @@ do
     j ) projectReq=y;clientReq=y;;
     J ) project="$OPTARG";;
     k ) makeLink=y;clientReq=y;projectReq=y;;
-    l ) actionFilter="$OPTARG";dosum=y;verbose=y;;
-    L ) actionFilter="$OPTARG";actionFilterInvert=y;dosum=y;verbose=y;;
+    l ) actionFilter="$OPTARG";doSum=y;verbose=y;;
+    L ) actionFilter="$OPTARG";actionFilterInvert=y;doSum=y;verbose=y;;
     m ) format="$OPTARG";;
-    n ) today=y;dosum=y;;
+    n ) today=y;doSum=y;;
     o ) readLog=lastOutLine;;
-    P ) fromPaid=y;clientReq=y;dosum=y;;
+    P ) fromPaid=y;clientReq=y;doSum=y;;
     q ) quiet=y;;
     r ) readLog=lastLine;;
-    s ) dosum=y;;
-    S ) dosum=y;dailySum=y;format=minimal;;
+    s ) doSum=y;;
+    S ) doSum=y;dailySum=y;format=minimal;;
     t ) to="$OPTARG";;
     v ) verbose=y;;
     w ) writePaid=y;clientReq=y;;
@@ -59,6 +57,10 @@ do
 done
 shift $((OPTIND-1)); OPTIND=1
 wd="$PWD"
+
+[[ -z $client ]] && client="$PUNCH_CLIENT"
+[[ -z $project && $doSum != y ]] && project="$PUNCH_PROJECT"
+
 ## read input message (description)
 [[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin)"
 if [[ -n "$pipedInput" ]]; then
@@ -86,7 +88,7 @@ else
   action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
 fi
 action="$(echo $action | sed "s/\`/'/g")" # FIXME @specialCharacters
-if [ -z "$action$readLog$addToIndex" -a "$dosum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
+if [ -z "$action$readLog$addToIndex" -a "$doSum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
   bold=$(tput bold)
   normal=$(tput sgr0)
   ## show the manpage if not enough arguments given to do anything
@@ -347,7 +349,7 @@ if [[ -n "$action" ]]; then
     fi
   fi
   ### ] discard
-elif [ "$dosum" = y ]; then
+elif [ "$doSum" = y ]; then
 
   ## sum between two dates, filtering by client, project, external ID, or text search
   function punchsum {
