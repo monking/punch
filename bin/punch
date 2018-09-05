@@ -62,9 +62,16 @@ wd="$PWD"
 ## read input message (description)
 [[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin)"
 if [[ -n "$pipedInput" ]]; then
-	pipedInput="$(echo -n "$pipedInput" | perl -pe 's#^\s*(- (\[.\])?)?\s*##')" # strip markdown lists/checkboxes
-	pipedInput="$(echo -n "$pipedInput" | perl -pe 's#\[([^\]]+)\]\s*\([^\)]*\)#\1#g')" # strip regular links
-	pipedInput="$(echo -n "$pipedInput" | perl -pe 's#\[([^\]]+)\]\s*\[[^\]]*\)#\1#g')" # strip named links
+	checkboxPattern='s#^\s*(- (\[.\])?)?\s*##'
+	plainLinkPattern='s#\[([^\]]+)\]\s*\([^\)]*\)#\1#g'
+	namedLinkPattern='s#\[([^\]]+)\]\s*\[[^\]]*\)#\1#g'
+	importantUrgentFlagPattern='s#\s*\{[iux]{2}\}##'
+	pipedInput="$(echo -n "$pipedInput" | perl -pe "\
+		$checkboxPattern |
+		$plainLinkPattern |
+		$namedLinkPattern |
+		$importantUrgentFlagPattern \
+	")"
 	action="$pipedInput"
 	if [[ $ignoreExternalID != y && -z "$externalID" ]]; then
 		# attempt to find an external ID matching the regular expression /[A-Z]+-[0-9]+/
