@@ -20,7 +20,7 @@ date_format_timestamp="+%s"
 . "$(dirname $0)/helpers.sh" # import "pad" and "formatSeconds" functions
 
 ## parse arguments
-while getopts "cC:d:jJ:t:sSf:Pl:L:wevkghriIoaAm:nqx:X" flag
+while getopts "cC:d:jJ:t:sSf:pPl:L:wevkghriIoaAm:nqx:X" flag
 do
   case $flag in
     a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -43,6 +43,7 @@ do
     m ) format="$OPTARG";;
     n ) today=y;doSum=y;;
     o ) readLog=lastOutLine;;
+    p ) echoPipe=y;quiet=y;;
     P ) fromPaid=y;clientReq=y;doSum=y;;
     q ) quiet=y;;
     r ) readLog=lastLine;;
@@ -67,11 +68,12 @@ action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
 [[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin)"
 
 if [[ -n "$pipedInput" ]]; then
+	[[ $echoPipe = y ]] && echo -en "$pipedInput"
 	checkboxPattern='s#^\s*(- (\[.\])?)?\s*##'
 	plainLinkPattern='s#\[([^\]]+)\]\s*\([^\)]*\)#\1#g'
 	namedLinkPattern='s#\[([^\]]+)\]\s*\[[^\]]*\)#\1#g'
 	importantUrgentFlagPattern='s#\s*\{[iux]{2}\}##'
-	pipedInput="$(echo -n "$pipedInput" | perl -pe "\
+	sanitizedPipedInput="$(echo -n "$pipedInput" | perl -pe "\
 		$checkboxPattern |
 		$plainLinkPattern |
 		$namedLinkPattern |
@@ -81,16 +83,16 @@ if [[ -n "$pipedInput" ]]; then
 	if [[ $ignoreExternalID != y && -z "$externalID" ]]; then
 		# attempt to find an external ID matching the regular expression /[A-Z]+-[0-9]+/
 		externalIDPattern='^(.*? ?)[^A-Za-z0-9]*([A-Z]+-[0-9]+)[^A-Za-z0-9]*(.*)'
-		foundExternalID="$(echo -n "$pipedInput" | perl -pe 's/'"$externalIDPattern"'/\2/')"
-		if [[ "$pipedInput" != "$foundExternalID" ]]; then
+		foundExternalID="$(echo -n "$sanitizedPipedInput" | perl -pe 's/'"$externalIDPattern"'/\2/')"
+		if [[ "$sanitizedPipedInput" != "$foundExternalID" ]]; then
 			externalID="$foundExternalID"
-			pipedInput="$(echo -n "$pipedInput" | perl -pe 's/'"$externalIDPattern"'/\1\3/')"
+			sanitizedPipedInput="$(echo -n "$sanitizedPipedInput" | perl -pe 's/'"$externalIDPattern"'/\1\3/')"
 		fi
 	fi
 
 	actionSeparator=" -- "
 	[[ -z $action ]] && actionSeparator=""
-	action="${pipedInput}${actionSeparator}${action}"
+	action="${sanitizedPipedInput}${actionSeparator}${action}"
 fi
 
 action="$(echo $action | sed "s/\`/'/g")" # FIXME @specialCharacters
@@ -338,11 +340,13 @@ if [[ "$goToDir" = y ]]; then
   fi
 fi
 if [[ -n "$action" ]]; then
-  ## show summary of new entry
-  output="$client -- $project   $action"
-  [[ -n "$externalID" ]] && output="${output}   (#$externalID)"
-  output="${output}   ($date)"
-  echo "$output"
+	if [[ $quiet != y ]]; then
+		## show summary of new entry
+		output="$client -- $project   $action"
+		[[ -n "$externalID" ]] && output="${output}   (#$externalID)"
+		output="${output}   ($date)"
+		echo "$output"
+	fi
   ## write new entry to file
   echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
   sort "$writeFile" -o "$writeFile"
