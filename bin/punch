@@ -219,7 +219,7 @@ if [ -n "$latestfile" ]; then
   fi
 
   if [[ $resumeIn = y ]]; then
-    action="$previousAction"
+    [[ -z $action ]] && action="$previousAction"
     externalID="$previousExtID"
     if [[ $pInOut = o ]]; then
       hclAction="resume"
