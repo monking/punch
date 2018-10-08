@@ -152,6 +152,7 @@ if [ -n "$latestfile" ]; then
   ## gather context for the command: what was the last relevant entry?
   if [ "$readLog" = lastInLine ]; then
     while read -e line; do
+      [[ $line =~ ^\"unix\ timestamp\" ]] && continue # ignore header
       if [ "${line/\"*\"	\"*\"	\"i\"	*/y}" = y ]; then
         eval "lineArray=($line)"
         previousUnixTimestamp="${lineArray[0]}"
@@ -166,6 +167,7 @@ if [ -n "$latestfile" ]; then
   elif [ "$readLog" = previousInLine ]; then
     previousLine=
     while read -e line; do
+      [[ $line =~ ^\"unix\ timestamp\" ]] && continue # ignore header
       if [ -n "$previousLine" ]; then
         eval lineArray=($(echo $previousLine | sed 's/,//g'))
         previousUnixTimestamp="${lineArray[0]}"
@@ -183,6 +185,7 @@ if [ -n "$latestfile" ]; then
   elif [ "$readLog" = firstInLine ]; then
     onBreak=n
     while read -e line; do
+      [[ $line =~ ^\"unix\ timestamp\" ]] && continue # ignore header
       if [ "${line/\"*\"	\"*\"	\"o\"	*/y}" = y ]; then
         onBreak=y
       elif [ $onBreak = y ]; then
@@ -343,16 +346,20 @@ if [[ "$goToDir" = y ]]; then
   fi
 fi
 if [[ -n "$action" ]]; then
-	if [[ $quiet != y ]]; then
-		## show summary of new entry
-		output="$client -- $project   $action"
-		[[ -n "$externalID" ]] && output="${output}   (#$externalID)"
-		output="${output}   ($date)"
-		echo "$output"
-	fi
+  if [[ $quiet != y ]]; then
+    ## show summary of new entry
+    output="$client -- $project   $action"
+    [[ -n "$externalID" ]] && output="${output}   (#$externalID)"
+    output="${output}   ($date)"
+    echo "$output"
+  fi
   ## write new entry to file
+  if [[ ! -s "$writeFile" ]]; then
+    # add header row to new file
+    echo "\"unix timestamp\"	\"date\"	\"in/out\"	\"client\"	\"category/project\"	\"task\"	\"reference number\"" > "$writeFile"
+  fi
   echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
-  sort "$writeFile" -o "$writeFile"
+  # sort "$writeFile" -o "$writeFile" # TODO: after sorting, put header row back at the top
 
   ### harvest integration: discard [
   if [[ $harvest = y && -n $hclAction ]]; then
@@ -397,6 +404,7 @@ elif [ "$doSum" = y ]; then
         while read line; do
           if [ -z "$line" ]; then continue; fi
           onLine=$(($onLine + 1))
+          [[ $line =~ ^\"unix\ timestamp\" ]] && continue # ignore header
           if [ -z "$quiet" ]; then
             whisper -ne "  computing $readYear/$readMonth ($numLines entries) -- $((${onLine}*100/${numLines}))%\r"
           fi
