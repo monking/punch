@@ -353,13 +353,16 @@ if [[ -n "$action" ]]; then
     output="${output}   ($date)"
     echo "$output"
   fi
-  ## write new entry to file
+
+	# start new file
   if [[ ! -s "$writeFile" ]]; then
-    # add header row to new file
-    echo "\"unix timestamp\"	\"date\"	\"in/out\"	\"client\"	\"category/project\"	\"task\"	\"reference number\"" > "$writeFile"
+    # add header row # all those 0's are a cheat to get it to float to the top when sorting
+    echo "\"00000000000 unix timestamp\"	\"date\"	\"in/out\"	\"client\"	\"category/project\"	\"task\"	\"reference number\"" > "$writeFile"
   fi
+
+  ## write new entry to file
   echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
-  # sort "$writeFile" -o "$writeFile" # TODO: after sorting, put header row back at the top
+  sort "$writeFile" -o "$writeFile"
 
   ### harvest integration: discard [
   if [[ $harvest = y && -n $hclAction ]]; then
