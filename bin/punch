@@ -102,7 +102,7 @@ if [[ -n "$pipedInput" ]]; then
 	action="${sanitizedPipedInput}${actionSeparator}${action}"
 fi
 
-action="$(echo $action | sed "s/\`/'/g")" # FIXME @specialCharacters
+action="$(echo $action | sed "s/\`/'/g" | sed "s/\"/\"\"/g" | sed 's/\\//g')" # FIXME @specialCharacters
 
 if [ -z "$action$readLog$addToIndex" -a "$doSum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
   bold=$(tput bold)
@@ -438,8 +438,9 @@ elif [ "$doSum" = y ]; then
             if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep $actionFilterOptions "$actionFilter") -gt 0 ) ) ]]; then
               if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
               if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
-              lastProject="${lineClient}___$(echo "$lineProject" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
-              lastAction="${lastProject}__$(echo "$lineAction" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')__$(echo "$lineExtID" | perl -pe 's/[^a-zA-Z0-9\n\r]+/_/g')"
+							patternReplaceNonAlphanumeric='s/[^a-zA-Z0-9\n\r]+/_/g'
+              lastProject="${lineClient}___$(echo "$lineProject" | perl -pe "$patternReplaceNonAlphanumeric")"
+              lastAction="${lastProject}__$(echo "$lineAction" | perl -pe "$patternReplaceNonAlphanumeric")__$(echo "$lineExtID" | perl -pe "$patternReplaceNonAlphanumeric")"
               lastUTime=$lineUTime
             else
               lastUTime=0
