@@ -1,5 +1,4 @@
 ## preset shortcut shell aliases
-alias p='punch'
 alias pe='punch -e'
 alias pg='punch -g'
 alias pgg='punch -G'
