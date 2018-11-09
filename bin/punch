@@ -27,7 +27,7 @@ date_format_timestamp="+%s"
 . "$(dirname $0)/helpers.sh" # import "pad" and "formatSeconds" functions
 
 ## parse arguments
-while getopts "cC:d:jJ:t:sSf:pPl:L:wevkghriIoaAm:nqx:X" flag
+while getopts "cC:d:jJ:t:sSf:FpPl:L:wevkghriIoaAm:nqx:X" flag
 do
   case $flag in
     a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
@@ -37,6 +37,7 @@ do
     d ) oneDay="$OPTARG";doSum=y;;
     e ) readLog=whole;;
     f ) from="$OPTARG";;
+    F ) outputWriteFilePath=true;;
     g ) goToDir=y;clientReq=y;projectReq=y;;
     # G ) goToTimeclockDir=y;;
     h ) harvest=y;hclAction=;;
@@ -146,6 +147,11 @@ fi
 ### ] discard
 ## determine to which file to write
 writeFile="$TIMECLOCKDIR/workclock_${year}_${month}.tsv"
+
+if [[ $outputWriteFilePath = true ]]; then
+	echo "$writeFile"
+	exit 0
+fi
 ## get the last filename, when sorted alphanumerically
 read latestfile other <<< $(\ls -r1 $TIMECLOCKDIR/workclock_*.tsv 2>/dev/null)
 if [ -n "$latestfile" ]; then

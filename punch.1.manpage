@@ -32,6 +32,9 @@ stdin is searched for an external ID matching th reegular expression /[A-Z]+-[0-
 -f <time>
     Set the time from which to start. This can be in any format that GNU date can parse. The default is the first of day of the month specified by -t.
 
+-F
+    Output the log file path.
+
 -g
     Echo the directory path linked to a project.
 
