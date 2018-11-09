@@ -105,7 +105,7 @@ fi
 
 action="$(echo $action | sed "s/\`/'/g" | sed "s/\"/\"\"/g" | sed 's/\\//g')" # FIXME @specialCharacters
 
-if [ -z "$action$readLog$addToIndex" -a "$doSum" != y -a "$goToDir" != y -a "$goToTimeclockDir" != y -a "$writePaid" != y -a "$makeLink" != y ]; then
+if [[ -z "$action$readLog$addToIndex" && "$doSum" != y && "$goToDir" != y && "$goToTimeclockDir" != y && "$writePaid" != y && "$makeLink" != y && "$outputWriteFilePath" != true ]]; then
   bold=$(tput bold)
   normal=$(tput sgr0)
   ## show the manpage if not enough arguments given to do anything
