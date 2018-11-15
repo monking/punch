@@ -73,7 +73,7 @@ wd="$PWD"
 ## read input message (description)
 action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
 
-[[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin)"
+[[ ! -t 1 || -p /dev/stdin ]] && pipedInput="$(cat /dev/stdin)" # FIXME: this is also triggered if piping punch out to something else, which it _should not_.
 
 if [[ -n "$pipedInput" ]]; then
 	[[ $echoPipe = y ]] && echo -en "$pipedInput"
