@@ -20,7 +20,7 @@ date -d yesterday &>/dev/null || {
 	exit 1
 }
 
-date_format_varied="+%Y %m %s %a_%b_%d_%T_%Z_%Y"
+date_format_varied="+%Y %m %s %Y-%m-%dT%T%z_%a" # ISO-8601 + day of the week
 date_format_year_month="+%Y %m"
 date_format_timestamp="+%s"
 
