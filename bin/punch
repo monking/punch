@@ -169,7 +169,7 @@ if [ -n "$latestfile" ]; then
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
-		done <<< "$(tail --lines=+2 "$latestfile" | tail -50 "$latestfile")"
+		done <<< "$(tail -n+2 "$latestfile" | tail -50 "$latestfile")"
 	elif [ "$readLog" = previousInLine ]; then
 		previousLine=
 		while read -e line; do
@@ -187,7 +187,7 @@ if [ -n "$latestfile" ]; then
 			if [ "${line/\"*\"	\"*\"	\"i\"	*/y}" = y ]; then
 				previousLine=$line
 			fi
-		done <<< "$(tail --lines=+2 "$latestfile" | tail -50 "$latestfile")"
+		done <<< "$(tail -n+2 "$latestfile" | tail -50 "$latestfile")"
 	elif [ "$readLog" = firstInLine ]; then
 		onBreak=n
 		while read -e line; do
@@ -205,7 +205,7 @@ if [ -n "$latestfile" ]; then
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
-		done <<< "$(tail --lines=+2 "$latestfile" | tail -50 "$latestfile")"
+		done <<< "$(tail -n+2 "$latestfile" | tail -50 "$latestfile")"
 	elif [ "$readLog" = lastOutLine ]; then
 		while read -e line; do
 			if [ "${line/\"*\"	\"*\"	\"o\"	*/y}" = y ]; then
@@ -218,9 +218,9 @@ if [ -n "$latestfile" ]; then
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
-		done <<< "$(tail --lines=+2 "$latestfile" | tail -50 "$latestfile")"
+		done <<< "$(tail -n+2 "$latestfile" | tail -50 "$latestfile")"
 	else
-		eval lineArray=($(tail --lines=+2 "$latestfile" | tail -1 "$latestfile"))
+		eval lineArray=($(tail -n+2 "$latestfile" | tail -1 "$latestfile"))
 		previousUnixTimestamp="${lineArray[0]}"
 		previousDate="${lineArray[1]}" # a d b Y T Z
 		previousIO="${lineArray[2]}"
