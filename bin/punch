@@ -252,6 +252,8 @@ if [ -n "$action" ]; then
 	if [[ "$action" =~ ^(stop|out|break|lunch|done)(:.*)?$ ]]; then
 		readLog=lastLine
 		io=o
+		project=
+		projectReq=n
 		if [[ -z $hclAction ]]; then hclAction="stop"; fi
 	else
 		io=i
