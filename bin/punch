@@ -27,25 +27,25 @@ date_format_timestamp="+%s"
 . "$(dirname $0)/helpers.sh" # import "pad" and "formatSeconds" functions
 
 ## parse arguments
-while getopts "cC:d:jJ:t:sSf:FpPl:L:wevkghriIoaAm:nqx:X" flag
+while getopts "c:Cd:j:Jt:sSf:FpPl:L:wevkghriIoaAm:nqx:X" flag
 do
 	case $flag in
-		a ) resumeIn=y;readLog=lastInLine;clientReq=y;projectReq=y;;
-		A ) resumeIn=y;readLog=previousInLine;clientReq=y;projectReq=y;;
-		c ) clientReq=y;;
-		C ) client="$OPTARG";;
+		a ) resumeIn=y;readLog=lastInLine;clientReq=y;topicReq=y;;
+		A ) resumeIn=y;readLog=previousInLine;clientReq=y;topicReq=y;;
+		c ) client="$OPTARG";;
+		C ) clientReq=y;;
 		d ) oneDay="$OPTARG";doSum=y;;
 		e ) readLog=whole;;
 		f ) from="$OPTARG";;
 		F ) outputWriteFilePath=true;;
-		g ) goToDir=y;clientReq=y;projectReq=y;;
+		g ) goToDir=y;clientReq=y;topicReq=y;;
 		# G ) goToTimeclockDir=y;;
 		h ) harvest=y;hclAction=;;
 		i ) readLog=lastInLine;;
 		I ) readLog=firstInLine;;
-		j ) projectReq=y;clientReq=y;;
-		J ) project="$OPTARG";;
-		k ) makeLink=y;clientReq=y;projectReq=y;;
+		j ) topic="$OPTARG";;
+		J ) topicReq=y;clientReq=y;;
+		k ) makeLink=y;clientReq=y;topicReq=y;;
 		l ) actionFilter="$OPTARG";doSum=y;verbose=y;;
 		L ) actionFilter="$OPTARG";actionFilterInvert=y;doSum=y;verbose=y;;
 		m ) format="$OPTARG";;
@@ -68,7 +68,7 @@ shift $((OPTIND-1)); OPTIND=1
 wd="$PWD"
 
 [[ -z $client ]] && client="$PUNCH_CLIENT"
-[[ -z $project && $doSum != y ]] && project="$PUNCH_PROJECT"
+[[ -z $topic && $doSum != y ]] && topic="$PUNCH_TOPIC"
 
 ## read input message (description)
 action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
@@ -165,7 +165,7 @@ if [ -n "$latestfile" ]; then
 				previousDate="${lineArray[1]}" # a d b Y T Z
 				previousIO="${lineArray[2]}"
 				previousClient="${lineArray[3]}"
-				previousProject="${lineArray[4]}"
+				previousTopic="${lineArray[4]}"
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
@@ -180,7 +180,7 @@ if [ -n "$latestfile" ]; then
 				previousDate="${lineArray[1]}" # a d b Y T Z
 				previousIO="${lineArray[2]}"
 				previousClient="${lineArray[3]}"
-				previousProject="${lineArray[4]}"
+				previousTopic="${lineArray[4]}"
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
@@ -201,7 +201,7 @@ if [ -n "$latestfile" ]; then
 				previousDate="${lineArray[1]}" # a d b Y T Z
 				previousIO="${lineArray[2]}"
 				previousClient="${lineArray[3]}"
-				previousProject="${lineArray[4]}"
+				previousTopic="${lineArray[4]}"
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
@@ -214,7 +214,7 @@ if [ -n "$latestfile" ]; then
 				previousDate="${lineArray[1]}" # a d b Y T Z
 				previousIO="${lineArray[2]}"
 				previousClient="${lineArray[3]}"
-				previousProject="${lineArray[4]}"
+				previousTopic="${lineArray[4]}"
 				previousAction="${lineArray[5]}"
 				previousExtID="${lineArray[6]}"
 			fi
@@ -225,7 +225,7 @@ if [ -n "$latestfile" ]; then
 		previousDate="${lineArray[1]}" # a d b Y T Z
 		previousIO="${lineArray[2]}"
 		previousClient="${lineArray[3]}"
-		previousProject="${lineArray[4]}"
+		previousTopic="${lineArray[4]}"
 		previousAction="${lineArray[5]}"
 		previousExtID="${lineArray[6]}"
 	fi
@@ -240,29 +240,29 @@ if [ -n "$latestfile" ]; then
 		fi
 	fi
 fi
-## store client/project metadata (1/?)
+## store client/topic metadata (1/?)
 if [ ! -a "$CLIENTSDIR" ]; then
 	mkdir -p "$CLIENTSDIR"
 fi
 ## if the user is indending to add an entry, gather all necessary info from input or sheet context
 if [ -n "$action" ]; then
 	clientReq=y
-	projectReq=y
+	topicReq=y
 	## determine if the entry is logging in or out
 	if [[ "$action" =~ ^(stop|out|break|lunch|done)(:.*)?$ ]]; then
 		readLog=lastLine
 		io=o
-		project=
-		projectReq=n
+		topic=
+		topicReq=n
 		if [[ -z $hclAction ]]; then hclAction="stop"; fi
 	else
 		io=i
 		if [[ -z $hclAction ]]; then hclAction="start"; fi
 	fi
 elif [ "$readLog" = lastInLine ]; then
-	# sum up the project you're currently on
+	# sum up the topic you're currently on
 	clientReq=y
-	projectReq=y
+	topicReq=y
 fi
 if [ -z "$client" -a "$clientReq" == y ]; then
 	if [ -n "$previousClient" -a -n "$readLog" ]; then
@@ -291,32 +291,32 @@ fi
 if [ "$writePaid" = y ]; then
 	echo "$from" > "$clientMarker/.paid"
 fi
-if [ -z "$project" -a "$projectReq" == y ]; then
-	if [ -n "$previousProject" -a -n "$readLog" ]; then
-		project=$previousProject
+if [ -z "$topic" -a "$topicReq" == y ]; then
+	if [ -n "$previousTopic" -a -n "$readLog" ]; then
+		topic=$previousTopic
 	else
-		if [ -n "$previousProject" ]; then
-			projectDefault=" [$previousProject]"
+		if [ -n "$previousTopic" ]; then
+			topicDefault=" [$previousTopic]"
 		fi
-		printf "project$projectDefault: "
+		printf "topic$topicDefault: "
 		cd "$clientMarker"
-		## if no project, prompt for project name with autocomplete of previous projects on this client
-		read -e project
+		## if no topic, prompt for topic name with autocomplete of previous topics on this client
+		read -e topic
 		cd "$wd"
-		if [ -z "$project" ]; then
-			project="$previousProject"
+		if [ -z "$topic" ]; then
+			topic="$previousTopic"
 		fi
 	fi
 fi
 ### bash hack: underscores
-project="$(basename "$project" | perl -pe 's/\/|\n|\r//g' | perl -pe 's/[^\w]+/_/g')"
-if [ ! -d "$clientMarker/$project" ]; then
-	mkdir -p "$clientMarker/$project"
+topic="$(basename "$topic" | perl -pe 's/\/|\n|\r//g' | perl -pe 's/[^\w]+/_/g')"
+if [ ! -d "$clientMarker/$topic" ]; then
+	mkdir -p "$clientMarker/$topic"
 fi
-## project metadata: symlink to working directory
-project_profile="$clientMarker/$project/profile"
-wdmarker="$clientMarker/$project/working_directory"
-branch_marker="$clientMarker/$project/working_branch"
+## topic metadata: symlink to working directory
+topic_profile="$clientMarker/$topic/profile"
+wdmarker="$clientMarker/$topic/working_directory"
+branch_marker="$clientMarker/$topic/working_branch"
 if [ "$makeLink" = y ]; then
 	unlink "$wdmarker" 2>/dev/null
 	ln -s "$wd" "$wdmarker"
@@ -324,7 +324,7 @@ if [ "$makeLink" = y ]; then
 	[[ -n "$branch" ]] && echo -n "$branch" > "$branch_marker"
 	whisper "link established"
 fi
-## if user desires, go to the project's working directory
+## if user desires, go to the topic's working directory
 if [[ "$goToDir" = y ]]; then
 	if [[ -L "$wdmarker" ]]; then
 		workingDir="$(readlink "$wdmarker")"
@@ -343,20 +343,20 @@ if [[ "$goToDir" = y ]]; then
 	elif [[ -d "$wdmarker" ]]; then
 		read -ep "Which directory do you want? $(ls -1 "$wdmarker")"
 	else
-		whisper "No working directory is set for this project. Make one with the -k option."
+		whisper "No working directory is set for this topic. Make one with the -k option."
 	fi
 
-	if [[ -f "$project_profile" ]]; then
-		read -p "Load project profile? [Y/n]"
+	if [[ -f "$topic_profile" ]]; then
+		read -p "Load topic profile? [Y/n]"
 		if [[ "$REPLY" =~ ^([yY].*)?$ ]]; then
-			source "$project_profile"
+			source "$topic_profile"
 		fi
 	fi
 fi
 if [[ -n "$action" ]]; then
 	if [[ $quiet != y ]]; then
 		## show summary of new entry
-		output="$client -- $project	 $action"
+		output="$client -- $topic	 $action"
 		[[ -n "$externalID" ]] && output="${output}	 (#$externalID)"
 		output="${output}	 ($date)"
 		echo "$output"
@@ -365,11 +365,11 @@ if [[ -n "$action" ]]; then
 	# start new file
 	if [[ ! -s "$writeFile" ]]; then
 		# add header row # all those 0's are a cheat to get it to float to the top when sorting
-		echo "\"00000000000 unix timestamp\"	\"date\"	\"in/out\"	\"client\"	\"category/project\"	\"task\"	\"reference number\"" > "$writeFile"
+		echo "\"00000000000 unix timestamp\"	\"date\"	\"in/out\"	\"client\"	\"topic\"	\"task\"	\"reference number\"" > "$writeFile"
 	fi
 
 	## write new entry to file
-	echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$project\"	\"$action\"	\"$externalID\"" >> "$writeFile"
+	echo "\"$unixTimestamp\"	\"$date\"	\"$io\"	\"$client\"	\"$topic\"	\"$action\"	\"$externalID\"" >> "$writeFile"
 	sort "$writeFile" -o "$writeFile"
 
 	### harvest integration: discard [
@@ -383,9 +383,9 @@ if [[ -n "$action" ]]; then
 	### ] discard
 elif [ "$doSum" = y ]; then
 
-	## sum between two dates, filtering by client, project, external ID, or text search
+	## sum between two dates, filtering by client, topic, external ID, or text search
 	function punchsum {
-		local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastProject lastUTime line lineAction lineClient lineExtID lineIO lineProject lineUTime maxClLen maxPrLen minutes month numLines onLine period projectSum projectTitle projects readFile readMonth readYear sum sumFrom sumProject sumTo unixTimestamp year
+		local T Y Z a actionFilterOptions actionSum actionTitle actions b clientTitle d date fDate fMonth fSDate fUTime fYear fYMD hours hoursTitle lastAction lastTopic lastUTime line lineAction lineClient lineExtID lineIO lineTopic lineUTime maxClLen maxPrLen minutes month numLines onLine period topicSum topicTitle topics readFile readMonth readYear sum sumFrom sumTopic sumTo unixTimestamp year
 		sumFrom="$1"
 		sumTo="$2"
 		if [ -z "$quiet" -a "$(uname | perl -pe 's/.*CYGWIN.*/CYGWIN/i')" = "CYGWIN" ]; then
@@ -400,9 +400,9 @@ elif [ "$doSum" = y ]; then
 		date="${date//_/ }"
 		hoursTitle="HOURS"
 		clientTitle="CLIENT"
-		projectTitle="PROJECT"
+		topicTitle="TOPIC"
 		actionTitle="ACTION"
-		sum=0; lastUTime=0; projects=""; actions=""; readYear=$fYear; readMonth=$fMonth; maxPrLen=${#projectTitle}; maxClLen=${#clientTitle};
+		sum=0; lastUTime=0; topics=""; actions=""; readYear=$fYear; readMonth=$fMonth; maxPrLen=${#topicTitle}; maxClLen=${#clientTitle};
 		actionFilterOptions="-ic"
 		if [[ $actionFilterInvert = y ]]; then
 			actionFilterOptions="-v $actionFilterOptions"
@@ -425,16 +425,16 @@ elif [ "$doSum" = y ]; then
 					lineDate="${lineArray[1]}" # a d b Y T Z
 					lineIO="${lineArray[2]}"
 					lineClient="${lineArray[3]}"
-					lineProject="${lineArray[4]}"
+					lineTopic="${lineArray[4]}"
 					lineAction="${lineArray[5]}"
 					lineExtID="${lineArray[6]}"
 
 					if [ "$lastUTime" -ne 0 ]; then
 						period="$(expr $lineUTime - $lastUTime)"
-						if [ -z "$(eval "echo \$sum_$lastProject")" ]; then
-							projects="$projects $lastProject"
+						if [ -z "$(eval "echo \$sum_$lastTopic")" ]; then
+							topics="$topics $lastTopic"
 						fi
-						eval "local sum_$lastProject=\"\$(expr 0\$sum_$lastProject + $period)\""
+						eval "local sum_$lastTopic=\"\$(expr 0\$sum_$lastTopic + $period)\""
 						if [ -z "$(eval "echo \$sum_$lastAction")" ]; then
 							actions="$actions $lastAction"
 						fi
@@ -443,16 +443,16 @@ elif [ "$doSum" = y ]; then
 						lastUTime=0
 					fi
 					if [ $lineUTime -gt $fUTime -a $lineUTime -lt $unixTimestamp ]; then
-						if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$project" || "$lineProject" = "$project" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep $actionFilterOptions "$actionFilter") -gt 0 ) ) ]]; then
+						if [[ $lineIO = i && ( -z "$client" || "$lineClient" = "$client" ) && ( -z "$topic" || "$lineTopic" = "$topic" ) && ( -z "$actionFilter" || ( $(echo $lineAction | grep $actionFilterOptions "$actionFilter") -gt 0 ) ) ]]; then
 							if [ ${#lineClient} -gt $maxClLen ]; then maxClLen=${#lineClient}; fi
-							if [ ${#lineProject} -gt $maxPrLen ]; then maxPrLen=${#lineProject}; fi
+							if [ ${#lineTopic} -gt $maxPrLen ]; then maxPrLen=${#lineTopic}; fi
 							patternReplaceNonAlphanumeric='s/[^a-zA-Z0-9\n\r]+/_/g'
-							lastProject="${lineClient}___$(echo "$lineProject" | perl -pe "$patternReplaceNonAlphanumeric")"
-							lastAction="${lastProject}__$(echo "$lineAction" | perl -pe "$patternReplaceNonAlphanumeric")__$(echo "$lineExtID" | perl -pe "$patternReplaceNonAlphanumeric")"
+							lastTopic="${lineClient}___$(echo "$lineTopic" | perl -pe "$patternReplaceNonAlphanumeric")"
+							lastAction="${lastTopic}__$(echo "$lineAction" | perl -pe "$patternReplaceNonAlphanumeric")__$(echo "$lineExtID" | perl -pe "$patternReplaceNonAlphanumeric")"
 							lastUTime=$lineUTime
 						else
 							lastUTime=0
-							lastProject=""
+							lastTopic=""
 							lastAction=""
 						fi
 					fi
@@ -466,10 +466,10 @@ elif [ "$doSum" = y ]; then
 		fi
 		if [ "$lastUTime" -ne 0 ]; then
 			period=$(($unixTimestamp - $lastUTime))
-			if [ -z "$(eval "echo \$sum_$lastProject")" ]; then
-				projects="$projects $lastProject"
+			if [ -z "$(eval "echo \$sum_$lastTopic")" ]; then
+				topics="$topics $lastTopic"
 			fi
-			eval "local sum_$lastProject=\"\$(expr 0\$sum_$lastProject + $period)\""
+			eval "local sum_$lastTopic=\"\$(expr 0\$sum_$lastTopic + $period)\""
 			if [ -z "$(eval "echo \$sum_$lastAction")" ]; then
 				actions="$actions $lastAction"
 			fi
@@ -487,24 +487,24 @@ elif [ "$doSum" = y ]; then
 
 		if [ "$format" == "default" ]; then
 			if [ -z "$client" ]; then
-				echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$clientTitle$(pad $(($maxClLen - ${#clientTitle})))	$projectTitle"
+				echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$clientTitle$(pad $(($maxClLen - ${#clientTitle})))	$topicTitle"
 			else
-				echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$projectTitle"
+				echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$topicTitle"
 			fi
 		fi
-		for sumProject in $projects; do
-			eval "projectSum=\$sum_$sumProject"
-			read lineClient lineProject <<< $(echo $sumProject | perl -pe 's/__+/ /g')
-			hours="$(formatSeconds $projectSum minutes hours)"
+		for sumTopic in $topics; do
+			eval "topicSum=\$sum_$sumTopic"
+			read lineClient lineTopic <<< $(echo $sumTopic | perl -pe 's/__+/ /g')
+			hours="$(formatSeconds $topicSum minutes hours)"
 			if [ -z "$client" ]; then
 				case "$format" in
-					spreadsheet ) echo "$fYMD	$hours	$lineClient	${lineProject//_/ }";;
-					* ) echo "$(pad $((7 - ${#hours})))$hours	$lineClient$(pad $(($maxClLen - ${#lineClient})))	${lineProject//_/ }";;
+					spreadsheet ) echo "$fYMD	$hours	$lineClient	${lineTopic//_/ }";;
+					* ) echo "$(pad $((7 - ${#hours})))$hours	$lineClient$(pad $(($maxClLen - ${#lineClient})))	${lineTopic//_/ }";;
 				esac
 			else
 				case "$format" in
-					spreadsheet ) echo "$fYMD	$hours	${lineProject//_/ }";;
-					* ) echo "$(pad $((7 - ${#hours})))$hours	${lineProject//_/ }";;
+					spreadsheet ) echo "$fYMD	$hours	${lineTopic//_/ }";;
+					* ) echo "$(pad $((7 - ${#hours})))$hours	${lineTopic//_/ }";;
 				esac
 			fi
 		done
@@ -513,29 +513,29 @@ elif [ "$doSum" = y ]; then
 			if [ "$format" == "default" ]; then
 				echo ''
 				if [ -z "$client" ]; then
-					echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$(pad $(($maxClLen - ${#clientTitle})))$clientTitle	$(pad $(($maxPrLen - ${#projectTitle})))$projectTitle	$actionTitle"
+					echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$(pad $(($maxClLen - ${#clientTitle})))$clientTitle	$(pad $(($maxPrLen - ${#topicTitle})))$topicTitle	$actionTitle"
 				else
-					echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$(pad $(($maxPrLen - ${#projectTitle})))$projectTitle	$actionTitle"
+					echo "$(pad $((7 - ${#hoursTitle})))$hoursTitle	$(pad $(($maxPrLen - ${#topicTitle})))$topicTitle	$actionTitle"
 				fi
 			fi
 			for action in $actions; do
 				eval "actionSum=\"\$sum_$action\""
-				read lineClient lineProject lineAction lineExtID <<< $(echo "$action" | perl -pe 's/__+/ /g')
+				read lineClient lineTopic lineAction lineExtID <<< $(echo "$action" | perl -pe 's/__+/ /g')
 				hours="$(formatSeconds $actionSum minutes hours)"
 				output=""
 				if [ -z "$client" ]; then
 					case "$format" in
-						spreadsheet ) output="${output}$fYMD	$hours	$lineClient	$lineProject	${lineAction//_/ }";;
+						spreadsheet ) output="${output}$fYMD	$hours	$lineClient	$lineTopic	${lineAction//_/ }";;
 						* )
-							output="${output}$(pad $((7 - ${#hours})))$hours	$(pad $(($maxClLen - ${#lineClient})))$lineClient	$(pad $(($maxPrLen - ${#lineProject})))$lineProject	${lineAction//_/ }"
+							output="${output}$(pad $((7 - ${#hours})))$hours	$(pad $(($maxClLen - ${#lineClient})))$lineClient	$(pad $(($maxPrLen - ${#lineTopic})))$lineTopic	${lineAction//_/ }"
 							[[ -n "$lineExtID" ]] && output="${output} (#$lineExtID)"
 							;;
 					esac
 				else
 					case "$format" in
-						spreadsheet ) output="${output}$fYMD	$hours	$lineProject	${lineAction//_/ }";;
+						spreadsheet ) output="${output}$fYMD	$hours	$lineTopic	${lineAction//_/ }";;
 						* ) 
-							output="${output}$(pad $((7 - ${#hours})))$hours	$(pad $(($maxPrLen - ${#lineProject})))$lineProject	${lineAction//_/ }"
+							output="${output}$(pad $((7 - ${#hours})))$hours	$(pad $(($maxPrLen - ${#lineTopic})))$lineTopic	${lineAction//_/ }"
 							[[ -n "$lineExtID" ]] && output="${output} (#$lineExtID)"
 							;;
 					esac
@@ -595,7 +595,7 @@ elif [ "$readLog" = "whole" ]; then
 elif [ -n "$readLog" ]; then
 	## show the previous line from the timesheet, formatted and showing time running
 	if [ "$verbose" = y ]; then
-		output="$previousClient -- $previousProject	 $previousAction"
+		output="$previousClient -- $previousTopic	 $previousAction"
 		[[ -n $previousExtID ]] && output="${output}		(#$previousExtID)"
 		output="${output}	$(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
 		echo -e "$output"

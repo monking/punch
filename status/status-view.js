@@ -77,7 +77,7 @@
 				'<div class="break ' + breakColor + '">' + hash.break + '</div>' +
 				'</div>' +
 				'<div class="client">' + hash.client + '</div>' +
-				' <div class="project">' + hash.project + '</div>' +
+				' <div class="topic">' + hash.topic + '</div>' +
 				' <div class="task">' + hash.task + '</div>';
 
 			statusElement.querySelector('.elapsed').onclick = createTimer;

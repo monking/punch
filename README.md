@@ -1,7 +1,7 @@
 punch
 =====
 
-Bash script to track time on projects in CSV files.
+Bash script to track time in CSV files.
 
 Installation
 ------------
@@ -35,12 +35,12 @@ Usage
 **TODO: this README needs to be updated. See the source for more detailed info.**
 
 The script defines many aliases for itself. The most commonly used are:
-- `p <task>`to switch to a task
+- `p TASK`to switch to a task
 - `p [out|break|lunch]` to punch out quickly with a mildly descriptive message
 - `pr` to see what your current task is, when it was started, and how long
   you've been on it
 - `pkv` to see the time spent on all tasks today, same as `punch -kv`
-- `pgr` to return to the directory of the current project
+- `pgr` to return to the directory of the current topic
 - `p -Scf Monday -t Friday` to generate a daily summary for a week with one client
 
 Typing just `punch` in the command-line will give you the function's manpage,
@@ -49,9 +49,9 @@ copied here:
     punch - Record and calculate timeclock entries
 
     SYNOPSIS
-    punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
-          [-s | -S] [-f <time> | -p | -d | -k] [-wr] [-vq | -m <format>]
-          [-elgG] [<action> | -a]
+    punch [-c CLIENT | -C] [j TOPIC | -J] [-t TIME | -i | -o]
+          [-s | -S] [-f TIME | -p | -d | -k] [-wr] [-vq | -m FORMAT]
+          [-elgG] [ACTION | -a]
 
     OPTIONS
     -a
@@ -61,15 +61,15 @@ copied here:
         Resume the previous action, not counting breaks (i.e. toggle between
         two latest tasks).
 
-    -c
+    -c CLIENT
         Specify a client. If no other argument supplies the client name, then
         you will be prompted to enter the name. Previously entered names can be
         auto-completed using the <TAB> key.
 
-    -C <client>
-        Specify the client name explicitly.
+    -C
+        Prompt the user for the client name.
 
-    -d <date>
+    -d DATE
         Supply a date to get the hours worked on that day. This is equivalent
         to using -s -f "MM/DD/YYYY 00:00:00" -t "MM/DD/YYYY 23:59:59", where
         "MM/DD/YYYY" is the given date, in any format. Implies -s.
@@ -78,7 +78,7 @@ copied here:
         Open the timeclock file in VIM. Which timeclock file is opened depends
         on the value of -t.
 
-    -f <time>
+    -f TIME
         Set the time from which to start. This can be in any format that GNU
         date can parse. The default is the first of day of the month specified
         by -t.
@@ -102,13 +102,11 @@ copied here:
         Use / show the most recent IN record that follows a break. Shows how
         long since you took a break.
 
-    -j
-        Enter the project at a prompt, with previous project records available
-        for autocomplete by pressing <TAB>. This is enabled by default when
-          recording an entry in the timeclock.
+    -j PROJECT
+        Specify the topic.
 
-    -J <project>
-        Specify the project name explicitly.
+    -J
+        Prompt the user for the topic name.
 
     -k
         Set the beginning of the time range to midnight today.  Implies -s,
@@ -142,7 +140,7 @@ copied here:
         Calculate daily sums of all the records in a given range, from a
         specific client if provided. Implies "minimal" format.
 
-    -t <time>
+    -t TIME
         Set the current time for a new timeclock entry, or when summing, set
         the end of the time range. This can be in any format that GNU date can
         parse. The default is "now".

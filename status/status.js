@@ -45,7 +45,7 @@
 								"elapsed" : portions[5],
 								"break"   : portions[10],
 								"client"  : portions[1],
-								"project" : portions[2],
+								"topic"   : portions[2],
 								"task"    : portions[3]
 							};
 
@@ -143,7 +143,7 @@
 					output = '[' + formatByDegree(hash.today, status.ranges.today.max, status.ranges.today.min) + ' today' +
 					', ' + formatByDegree(hash.elapsed, status.ranges.now.max, status.ranges.now.min) + ' now'+
 					', ' + formatByDegree(hash.break, status.ranges.break.max, status.ranges.break.min) + ' since break]' +
-					'\n' + hash.client+'/'+hash.project+' -- '+ hash.task;
+					'\n' + hash.client+'/'+hash.topic+' -- '+ hash.task;
 
 					sys.print(clc.reset+output);
 				});

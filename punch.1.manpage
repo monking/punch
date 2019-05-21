@@ -4,9 +4,9 @@
 .SH NAME
 punch - Record and calculate timeclock entries
 .SH SYNOPSIS
-punch [-c | -C <client>] [j | -J <project>] [-t <time> | -i | -o]
-      [-s | -S] [-f <time> | -P | -h | -n] [-wr] [-l <filter>]
-			[-vq | -m <format>] [-d] [-ekg] [<action> | -aAp]
+punch [-c CLIENT | -C] [-j TOPIC | -J] [-t TIME | -i | -o]
+      [-s | -S] [-f TIME | -P | -h | -n] [-wr] [-l FILTER]
+			[-vq | -m FORMAT] [-d] [-ekg] [ACTION | -aAp]
 
 stdin is searched for an external ID matching th reegular expression /[A-Z]+-[0-9]+/ (e.g. ABC-1, or X-123).
 
@@ -17,26 +17,26 @@ stdin is searched for an external ID matching th reegular expression /[A-Z]+-[0-
 -A
     Resume the previous action, not counting breaks (i.e. toggle between two latest tasks).
 
--c
-    Specify a client. If no other argument supplies the client name, then you will be prompted to enter the name. Previously entered names can be auto-completed using the <TAB> key.
-
--C <client>
+-c CLIENT
     Specify the client name explicitly.
 
--d <date>
+-C
+    Require a client name. If no other argument supplies the client name, then you will be prompted to enter the name. Previously entered names can be auto-completed using the <TAB> key.
+
+-d DATE
     Supply a date to get the hours worked on that day. This is equivalent to using -s -f "MM/DD/YYYY 00:00:00" -t "MM/DD/YYYY 23:59:59", where "MM/DD/YYYY" is the given date, in any format. Implies -s.
 
 -e
     Open the timeclock file in VIM. Which timeclock file is opened depends on the value of -t.
 
--f <time>
+-f TIME
     Set the time from which to start. This can be in any format that GNU date can parse. The default is the first of day of the month specified by -t.
 
 -F
     Output the log file path.
 
 -g
-    Echo the directory path linked to a project.
+    Echo the directory path linked to a topic.
 
 -h
     Echo the current command in hcl, the Harvest time tracking command line interface. Currently limited to `hcl resume` and `hcl stop`, which don't require further input.
@@ -47,19 +47,19 @@ stdin is searched for an external ID matching th reegular expression /[A-Z]+-[0-
 -I
     Use / show the most recent IN record that follows a break. Shows how long since you took a break.
 
--j
-    Enter the project at a prompt, with previous project records available for autocomplete by pressing <TAB>. This is enabled by default when recording an entry in the timeclock.
+-j TOPIC
+    Specify the topic name.
 
--J <project>
-    Specify the project name explicitly.
+-J
+    Require a client name. If no other argument supplies the client name, then you will be prompted to enter the name. Previously entered names can be auto-completed using the <TAB> key.
 
 -k
-    Create a link to the current working directory under the given client and project.
+    Create a link to the current working directory under the given client and topic.
 
--l <filter>
+-l FILTER
     Include only tasks with descriptions which match a grep search string.
 
--L <filter>
+-L FILTER
     Exclude tasks with descriptions which match a grep search string.
 
 -m
@@ -86,11 +86,11 @@ stdin is searched for an external ID matching th reegular expression /[A-Z]+-[0-
 -S
     Calculate daily sums of all the records in a given range, from a specific client if provided. Implies "minimal" format.
 
--t <time>
+-t TIME
     Set the current time for a new timeclock entry, or when summing, set the end of the time range. This can be in any format that GNU date can parse. The default is "now".
 
 -v
-    Show a verbose sum, with totals by task, not just by project.  Implies -s.
+    Show a verbose sum, with totals by task, not just by topic.  Implies -s.
 
 -w
     Write the beginning of the time range to the client record.

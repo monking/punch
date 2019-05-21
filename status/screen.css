@@ -24,11 +24,11 @@ body:before {
   font-size: 6em;
   min-height: 100%;
 }
-#status .client, #status .project, #status .task {
+#status .client, #status .topic, #status .task {
   position: relative;
   padding-left: 0.5em;
 }
-#status .client:before, #status .project:before, #status .task:before {
+#status .client:before, #status .topic:before, #status .task:before {
   text-transform: uppercase;
   position: absolute;
   display: block;
@@ -49,7 +49,7 @@ body:before {
 #status .client:before {
   content: "client";
 }
-#status .project:before {
+#status .topic:before {
   content: "job";
 }
 #status .task:before {
