@@ -357,7 +357,7 @@ if [[ -n "$action" ]]; then
 	if [[ $quiet != y ]]; then
 		## show summary of new entry
 		output="$client -- $topic	 $action"
-		[[ -n "$externalID" ]] && output="${output}	 (#$externalID)"
+		[[ -n "$externalID" ]] && output="${output}	 ($externalID)"
 		output="${output}	 ($date)"
 		echo "$output"
 	fi
@@ -528,7 +528,7 @@ elif [ "$doSum" = y ]; then
 						spreadsheet ) output="${output}$fYMD	$hours	$lineClient	$lineTopic	${lineAction//_/ }";;
 						* )
 							output="${output}$(pad $((7 - ${#hours})))$hours	$(pad $(($maxClLen - ${#lineClient})))$lineClient	$(pad $(($maxPrLen - ${#lineTopic})))$lineTopic	${lineAction//_/ }"
-							[[ -n "$lineExtID" ]] && output="${output} (#$lineExtID)"
+							[[ -n "$lineExtID" ]] && output="${output} ($lineExtID)"
 							;;
 					esac
 				else
@@ -536,7 +536,7 @@ elif [ "$doSum" = y ]; then
 						spreadsheet ) output="${output}$fYMD	$hours	$lineTopic	${lineAction//_/ }";;
 						* ) 
 							output="${output}$(pad $((7 - ${#hours})))$hours	$(pad $(($maxPrLen - ${#lineTopic})))$lineTopic	${lineAction//_/ }"
-							[[ -n "$lineExtID" ]] && output="${output} (#$lineExtID)"
+							[[ -n "$lineExtID" ]] && output="${output} ($lineExtID)"
 							;;
 					esac
 				fi
@@ -596,7 +596,7 @@ elif [ -n "$readLog" ]; then
 	## show the previous line from the timesheet, formatted and showing time running
 	if [ "$verbose" = y ]; then
 		output="$previousClient -- $previousTopic	 $previousAction"
-		[[ -n $previousExtID ]] && output="${output}		(#$previousExtID)"
+		[[ -n $previousExtID ]] && output="${output}		($previousExtID)"
 		output="${output}	$(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
 		echo -e "$output"
 	else
