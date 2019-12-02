@@ -67,9 +67,6 @@ done
 shift $((OPTIND-1)); OPTIND=1
 wd="$PWD"
 
-[[ -z $client ]] && client="$PUNCH_CLIENT"
-[[ -z $topic && $doSum != y ]] && topic="$PUNCH_TOPIC"
-
 ## read input message (description)
 action="$(echo $@ | sed 's/^\s+|\s+$|\r|\n//g')"
 
@@ -265,19 +262,23 @@ elif [ "$readLog" = lastInLine ]; then
 	topicReq=y
 fi
 if [ -z "$client" -a "$clientReq" == y ]; then
-	if [ -n "$previousClient" -a -n "$readLog" ]; then
+	if [[ -n "$previousClient" && -n "$readLog" ]]; then
 		client=$previousClient
 	else
-		if [ -n "$previousClient" ]; then
-			clientDefault=" [$previousClient]"
-		fi
-		printf "client$clientDefault: "
-		cd "$CLIENTSDIR/"
-		## if no client provided, prompt with autocomplete of previously logged clients
-		read -e client
-		cd "$wd"
-		if [ -z "$client" ]; then
-			client="$previousClient"
+		if [[ -n $PUNCH_CLIENT ]]; then
+			client="$PUNCH_CLIENT"
+		else
+			if [ -n "$previousClient" ]; then
+				clientDefault=" [$previousClient]"
+			fi
+			printf "client$clientDefault: "
+			cd "$CLIENTSDIR/"
+			## if no client provided, prompt with autocomplete of previously logged clients
+			read -e client
+			cd "$wd"
+			if [ -z "$client" ]; then
+				client="$previousClient"
+			fi
 		fi
 	fi
 fi
@@ -295,16 +296,20 @@ if [ -z "$topic" -a "$topicReq" == y ]; then
 	if [ -n "$previousTopic" -a -n "$readLog" ]; then
 		topic=$previousTopic
 	else
-		if [ -n "$previousTopic" ]; then
-			topicDefault=" [$previousTopic]"
-		fi
-		printf "topic$topicDefault: "
-		cd "$clientMarker"
-		## if no topic, prompt for topic name with autocomplete of previous topics on this client
-		read -e topic
-		cd "$wd"
-		if [ -z "$topic" ]; then
-			topic="$previousTopic"
+		if [[ -z $topic && $doSum != y ]]; then
+			topic="$PUNCH_TOPIC"
+		else
+			if [ -n "$previousTopic" ]; then
+				topicDefault=" [$previousTopic]"
+			fi
+			printf "topic$topicDefault: "
+			cd "$clientMarker"
+			## if no topic, prompt for topic name with autocomplete of previous topics on this client
+			read -e topic
+			cd "$wd"
+			if [ -z "$topic" ]; then
+				topic="$previousTopic"
+			fi
 		fi
 	fi
 fi
