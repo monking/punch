@@ -605,7 +605,7 @@ elif [ -n "$readLog" ]; then
 		output="${output}	$(echo $pT | perl -pe 's/:\d+$//') $(formatSeconds $(($unixTimestamp - $previousUnixTimestamp)) minutes hours) ago ($previousDate)"
 		echo -e "$output"
 	else
-		if [[ -z $previousAction || -z $previousUnixTimestamp ]]; then
+		if [[ -z $previousAction || -z $previousUnixTimestamp || ! $previousUnixTimestamp =~ ^[0-9]+$ ]]; then
 			whisper "ERROR: There was a problem reading the previous line of the log."
 			exit 1
 		else
